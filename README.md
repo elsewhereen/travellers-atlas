@@ -22,7 +22,9 @@ No save file, or playing on a console? Type the portal glyphs of the system you'
 
 ## Running it
 
-It is a plain static web page with no build step and no server. Open `index.html` in a browser, or serve the folder with any static file server.
+**Use it online:** https://elsewhereen.github.io/travellers-atlas/. It always runs the latest version, and your saves still never leave your computer.
+
+**Or run it locally:** download [the latest version as a zip](https://github.com/elsewhereen/travellers-atlas/archive/refs/heads/main.zip), unpack it and open `index.html` in a browser. It is a plain static web page with no build step and no server, so any static file server works too.
 
 - **Chromium-based browsers** (Chrome, Edge, Brave …) remember the save folder between visits.
 - **Firefox** can't remember folders, so you choose the folder again each visit. You can also drag the save folder onto the page.
