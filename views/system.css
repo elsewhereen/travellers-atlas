@@ -1,0 +1,80 @@
+/* System view (views/system.js): one solar system, in the spirit of the game's system view. Builds on card.css. */
+
+body[data-view="system"] .masthead,
+body[data-view="system"] .savelist,
+body[data-view="system"] .site-footer { display: none; }
+body:not([data-view="system"]) .sysv { display: none; }
+
+.sysv { position: fixed; inset: 0; z-index: 3; font-family: var(--card-font); color: var(--card-text); }
+.sysv__scene, .sysv__labels { position: absolute; inset: 0; }
+.sysv__scene canvas { display: block; }
+.sysv__labels { pointer-events: none; z-index: 1; }
+
+/* Title, top centre */
+.sysv__head {
+  position: absolute; z-index: 2; left: 50%; transform: translateX(-50%);
+  top: calc(1.2em + env(safe-area-inset-top, 0px)); width: min(46em, calc(100vw - 2em));
+  text-align: center; pointer-events: none; text-shadow: 0 0 10px #000, 0 0 2px #000;
+}
+.sysv__title {
+  margin: 0; font-family: var(--card-font-caps); font-size: 2.1em; font-weight: 500; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--masthead-ink, #ece4d6); line-height: 1.15;
+}
+.sysv__sub {
+  display: inline-block; margin-top: 0.35em; padding-top: 0.35em; border-top: 1px solid rgba(255, 255, 255, 0.28);
+  font-size: 1.05em; letter-spacing: 0.06em; color: var(--card-text); font-variant-numeric: tabular-nums;
+}
+.sysv__facts { margin-top: 0.3em; font-size: 0.85em; font-weight: 300; color: var(--card-dim); }
+
+/* Back to the galaxy map, top left */
+.sysv__nav {
+  position: absolute; z-index: 2; left: 1.2em; top: calc(5.6em + env(safe-area-inset-top, 0px));   /* under the menu button */
+  display: flex; flex-direction: column; align-items: flex-start; gap: 0.4em;
+}
+/* Same shape as the sky button (footer.css): corners cut top left and bottom right, a 1px frame (this layer)
+   around the fill (::before). */
+.sysv__btn {
+  --cut: 0.45rem;
+  position: relative; isolation: isolate;
+  display: inline-flex; align-items: center; gap: 0.55em; padding: 0.5em 0.9em; cursor: pointer;
+  font: inherit; font-size: 0.9em; color: var(--card-muted); border: 0;
+  background: rgba(255, 255, 255, 0.22);
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+  opacity: 0.85; transition: opacity 0.2s, color 0.2s, background 0.2s;
+}
+.sysv__btn::before {
+  content: ""; position: absolute; inset: 1px; z-index: -1; background: rgba(8, 9, 16, 0.85);
+  clip-path: polygon(calc(var(--cut) - 0.5px) 0, 100% 0, 100% calc(100% - var(--cut) + 0.5px), calc(100% - var(--cut) + 0.5px) 100%, 0 100%, 0 calc(var(--cut) - 0.5px));
+}
+.sysv__btn:hover, .sysv__btn:focus-visible { opacity: 1; color: #fff; background: rgba(255, 214, 150, 0.95); outline: none; }
+.sysv__btn--back { font-size: 1em; }
+.sysv__chev { font-size: 1.3em; line-height: 0.8; color: var(--tone-special); }
+.sysv__btn kbd {
+  font-family: ui-monospace, monospace; font-size: 0.72em; padding: 0.1em 0.4em; color: var(--card-dim);
+  border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 3px;
+}
+
+/* A body's name, under it. Hovering it (or the body) shows the card. */
+.sysv-lbl {
+  pointer-events: auto; cursor: default; white-space: nowrap; transform: translateY(0.9em);
+  font-size: 0.85em; color: var(--card-muted, #c9cbd6); text-shadow: 0 0 6px #000, 0 0 2px #000;
+}
+.sysv-lbl__t { display: inline-block; }
+.sysv-lbl--moon { font-size: 0.74em; color: var(--card-dim); }
+.sysv-lbl--station { color: #e8c66a; }
+.sysv-lbl--danger { color: var(--tone-danger, #ff7a6b); }
+.sysv-lbl--hover { color: #fff; }
+
+/* Hover card: placed by system.js next to the body */
+.sysv__hover { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.sysv__hover .card { position: absolute; left: 0; top: 0; pointer-events: auto; will-change: transform; }
+.sysv__card { --card-body: rgba(4, 4, 8, 0.78); width: min(24em, calc(100vw - 2em)); }
+.sysv__card .card__title { font-size: 1.6em; }
+
+@media (max-width: 700px) {
+  .sysv__title { font-size: 1.35em; letter-spacing: 0.1em; }
+  .sysv__sub { font-size: 0.85em; }
+  .sysv__nav { left: 5.6em; top: calc(1.5em + env(safe-area-inset-top, 0px)); }
+  .sysv__head { top: calc(5em + env(safe-area-inset-top, 0px)); }
+  .sysv__nav { flex-direction: row; }
+}

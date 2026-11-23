@@ -89,8 +89,8 @@
     return box;
   }
 
-  // Not built yet: the system view. The event is the hook for it.
-  function goTo(s) { document.dispatchEvent(new CustomEvent("map:open-system", { detail: { key: s.key } })); }
+  // The system view (views/system.js) listens for this.
+  function goTo(s) { document.dispatchEvent(new CustomEvent("map:open-system", { detail: { key: s.key, system: s } })); }
 
   // Header tint: the star's colour mixed into the dark card ground, so white text stays readable.
   function headTint(hex, share = 0.36) {
@@ -577,7 +577,8 @@
         renderer.setAnimationLoop(null);
         removeEventListener("resize", resize);
         removeEventListener("keydown", onKey);
-        renderer.dispose(); controls.dispose();
+        // dispose() keeps the WebGL context; browsers allow about 16, then drop the oldest (the map or the sky).
+        renderer.dispose(); renderer.forceContextLoss(); controls.dispose();
         root.remove();
       },
       focus(key) {

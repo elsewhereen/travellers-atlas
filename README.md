@@ -23,6 +23,7 @@ Point it at your No Man's Sky save folder and it shows:
 
 - **A 3D map of the space you know.** Every system you've visited or discovered sits at its exact position, computed from its address with the same algorithms the game uses. The distance to the galactic centre and between systems matches the galaxy map.
 - **Systems and planets from the address alone.** Each system shows its name, race, economy, conflict level and star colour, and each planet its biome, size, weather, sentinels, resources and whether it has Salvageable Scrap. This works for systems you haven't visited too.
+- **A system view** (press G on a system's card): the station in the middle and every planet and moon around it, placed in the game's own order and directions, with a card for each body.
 - **A filter** that finds the nearest systems with the resources or station goods you need.
 - **A character sheet.** It shows your standing, ranks, ships, multi-tools and freighter with their stats, how good each roll is for its class, and an optimizer for tech layouts (supercharged slots and adjacency).
 - **Distances** from where you are to any portal address.

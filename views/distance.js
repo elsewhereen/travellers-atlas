@@ -207,7 +207,8 @@
         renderer.setAnimationLoop(null);
         removeEventListener("resize", resize);
         removeEventListener("keydown", onKey);
-        renderer.dispose(); controls.dispose();
+        // dispose() keeps the WebGL context; browsers allow about 16, then drop the oldest (the map or the sky).
+        renderer.dispose(); renderer.forceContextLoss(); controls.dispose();
         root.remove();
       },
     };
