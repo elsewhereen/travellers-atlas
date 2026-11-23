@@ -2,6 +2,10 @@
 
 *A No Man's Sky companion that runs in your browser.*
 
+[![CodeQL](https://github.com/elsewhereen/travellers-atlas/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/elsewhereen/travellers-atlas/actions/workflows/github-code-scanning/codeql)
+
+Every push is scanned with GitHub's CodeQL for security problems, and with secret scanning for leaked keys.
+
 ## Why I made this
 
 <!-- TODO: the motivation goes here -->
