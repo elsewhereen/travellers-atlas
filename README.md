@@ -2,17 +2,22 @@
 
 *A No Man's Sky companion that runs in your browser.*
 
+**It runs entirely on your own machine.** Traveller's Atlas is a plain HTML page: no installation, no server, no account, and no internet needed. Download it, open `index.html`, and that's it. Your saves are read in your browser, and nothing ever leaves your computer.
+
 [![CodeQL](https://github.com/elsewhereen/travellers-atlas/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/elsewhereen/travellers-atlas/actions/workflows/github-code-scanning/codeql)
 
 Every push is scanned with GitHub's CodeQL for security problems, and with secret scanning for leaked keys.
 
-## Why I made this
+## Motivation
 
-<!-- TODO: the motivation goes here -->
+Space is big, and in NMS it feels even bigger. I wanted a sense of belonging somewhere: a clear, easily accessible picture of where I'd been, in a way the game never gave me.
 
-*(Coming soon.)*
+Along the way came other things. Searching for resources without any idea of where to look, or having to search the web for clues. A character sheet showing the progress the game hides from you or only shows now and then. And an optimizer for module placement: I knew the basics, but I didn't want to sit with a calculator just to outfit my multi-tool, ship
+or Exosuit.
 
-## What it does
+I now use this tool while I play, and I hope you'll find it useful too. Feel free to fork it and extend it to your heart's content.
+
+## What is included
 
 Point it at your No Man's Sky save folder and it shows:
 
@@ -26,12 +31,17 @@ No save file, or playing on a console? Type the portal glyphs of the system you'
 
 ## Running it
 
-**Use it online:** https://elsewhereen.github.io/travellers-atlas/. It always runs the latest version, and your saves still never leave your computer.
+**Run it locally:** download [the latest version as a zip](https://github.com/elsewhereen/travellers-atlas/archive/refs/heads/main.zip), unpack it and open `index.html` in a browser. That's all. There is no build step, no installation and no server, and it works offline. Everything it needs, fonts included, is in the folder.
 
-**Or run it locally:** download [the latest version as a zip](https://github.com/elsewhereen/travellers-atlas/archive/refs/heads/main.zip), unpack it and open `index.html` in a browser. It is a plain static web page with no build step and no server, so any static file server works too.
+As with anything you download, scan the zip with your own virus scanner before you open it. It contains only text files (HTML, CSS and JavaScript) and the font files, so there is nothing to install or run outside the browser.
+
+**Or use it online:** https://elsewhereen.github.io/travellers-atlas/ always has the latest version. Only the page itself comes from the internet; your saves still never leave your computer.
+
+Choosing your saves:
 
 - **Chromium-based browsers** (Chrome, Edge, Brave …) remember the save folder between visits.
-- **Firefox** can't remember folders, so you choose the folder again each visit. You can also drag the save folder onto the page.
+- **Firefox** can't remember folders, so you choose the folder again each visit.
+- **In any browser** you can also drag the save folder, or single save files, onto the page.
 
 The save folder is usually:
 
@@ -63,6 +73,7 @@ This app was built with AI. The code, the research into how the game generates i
 - [nms-core](https://github.com/elegra1965-source) (MIT) by elegra1965 for system names, which is ported from [nms_namegen](https://github.com/hadsh/nms_namegen) (MIT)
 - [three.js](https://threejs.org/) (MIT) for the 3D map
 - [fzstd](https://github.com/101arrowz/fzstd) (MIT) for zstd decompression
+- The [Exo 2](https://github.com/googlefonts/Exo-2.0) and [Jura](https://github.com/ossobuffo/jura) fonts (SIL Open Font License)
 - [bcdec](https://github.com/iOrange/bcdec) (Unlicense) for the BC7 texture decoder, which `lib/dds.js` ports
 - [hgpaktool](https://pypi.org/project/hgpaktool/) (MIT) for describing the game's pak format
 

@@ -1,5 +1,5 @@
 /* Card: an info pop-up in the spirit of the game's discovery panels (not a copy of them).
-   Fonts: Exo 2 for names and text, Jura in wide caps for actions. Loaded in index.html. */
+   Fonts: Exo 2 for names and text, Jura in wide caps for actions. Served locally from vendor/fonts. */
 
 :root {
   color-scheme: dark;   /* native controls (select pop-ups, checkboxes, scrollbars) in dark */
