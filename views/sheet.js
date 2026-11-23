@@ -354,7 +354,8 @@
       races ? ["Systems by race", races] : null,
     ]);
 
-    const fleet = m.frigates.length ? `<h4 class="h4">Fleet <small>${m.frigates.length} frigates</small></h4>
+    const fleet = m.frigates.length ? `<h4 class="h4">Fleet <small>${m.frigates.length} frigate${m.frigates.length === 1 ? "" : "s"}</small></h4>
+      ${m.freighter ? "" : `<p class="fine">No freighter yet. Every new game starts with one random frigate in the fleet; it joins your first freighter, so you can send expeditions straight away.</p>`}
       <table class="t"><thead><tr><th>Frigate</th><th class="num">Combat</th><th class="num">Expl.</th><th class="num">Mining</th><th class="num">Dipl.</th>
         <th class="num">Runs</th><th class="num">Success</th><th>Traits</th></tr></thead><tbody>
       ${m.frigates.map(f => `<tr><th scope="row">${cls(f.class)} ${esc(f.name || `${f.race} ${f.role.toLowerCase()}`)}</th>
