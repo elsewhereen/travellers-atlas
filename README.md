@@ -50,7 +50,7 @@ Positions, system and planet data are re-implementations of the game's procedura
 
 ## How it was made
 
-This app was built with AI. The code, the research into how the game generates its galaxy, and most of the writing came from conversations with Claude (Anthropic) in Claude Code. I set the direction, played the game alongside it, and checked the results: positions against the galaxy map, planets against what I found on the ground, and the character sheet against my own saves. Where the app says a value is checked against the game, that check was done in the game, not taken on the AI's word.
+This app was built with AI. The code, the research into how the game generates its galaxy, and most of the writing came from conversations with Claude (Anthropic) in Claude Code. I set the direction, played the game alongside it, and checked the results: positions against the galaxy map, planets against what I found on the ground, and the character sheet against my own saves. The generators were also compared with the game's own results, system by system and planet by planet, so they don't rest on the AI's word alone.
 
 ## Credits
 
