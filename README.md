@@ -48,6 +48,10 @@ This works with the PC version (Steam and GOG), whose paks are zstd-compressed.
 
 Positions, system and planet data are re-implementations of the game's procedural generation, checked against the game. A game update can change the game's rules, and then some values may be wrong until the app is updated.
 
+## How it was made
+
+This app was built with AI. The code, the research into how the game generates its galaxy, and most of the writing came from conversations with Claude (Anthropic) in Claude Code. I set the direction, played the game alongside it, and checked the results: positions against the galaxy map, planets against what I found on the ground, and the character sheet against my own saves. Where the app says a value is checked against the game, that check was done in the game, not taken on the AI's word.
+
 ## Credits
 
 - [nms-core](https://github.com/elegra1965-source) (MIT) by elegra1965 for system names, which is ported from [nms_namegen](https://github.com/hadsh/nms_namegen) (MIT)
