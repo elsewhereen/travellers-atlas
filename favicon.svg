@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- The masthead diamond on the night-blue ground. -->
+  <defs>
+    <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#ffd696" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffd696" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="64" height="64" rx="14" fill="#0c1222"/>
+  <circle cx="32" cy="32" r="30" fill="url(#glow)"/>
+  <path d="M32 6 58 32 32 58 6 32Z" fill="#ece4d6"/>
+  <circle cx="32" cy="32" r="8" fill="#0c1222"/>
+</svg>
