@@ -1,0 +1,16 @@
+/* Text size for the whole app. Every length in the CSS is in em (or rem), so these few numbers scale everything:
+   fonts, padding, gaps and widths together.
+     --font-base  the root size; 1rem. Change it to make the whole app larger or smaller.
+     --font-min   no base (root or card) goes below this, so it can't be turned down too far.
+     --card-size  the base inside cards (Card.popup, the settings, manual and distance cards …), relative to the root.
+   A component with its own base sets font-size: max(var(--font-min), <size>) on its outer element, and its
+   children use em, so they follow it. */
+:root {
+  --font-base: 16px;
+  --font-min: 12px;
+  --card-size: 1rem;
+  font-size: max(var(--font-min), var(--font-base));
+}
+@media (max-width: 480px) {
+  :root { --card-size: 0.85rem; }   /* phones: smaller cards */
+}

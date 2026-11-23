@@ -1,0 +1,3 @@
+# Game art is never committed: the app reads it from the player's own install (lib/gameicons.js).
+assets/
+*.dds

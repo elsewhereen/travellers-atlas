@@ -1,0 +1,139 @@
+/* Map view: 3D known space over the sky, with a system card and a list on the right. */
+
+body[data-view="map"] .masthead,
+body[data-view="map"] .savelist { display: none; }
+body:not([data-view="map"]) .map { display: none; }
+
+.map { position: fixed; inset: 0; z-index: 3; font-family: var(--card-font); color: var(--card-text); }
+.map__scene, .map__labels { position: absolute; inset: 0; }
+.map__scene canvas { display: block; }
+.map__labels { pointer-events: none; z-index: 1; }   /* own stacking context: CSS2DRenderer sets z-index per label */
+
+.map__where {
+  position: absolute; z-index: 2; top: calc(1em + env(safe-area-inset-top, 0px)); right: 1.2em;
+  max-width: min(24em, calc(100vw - 6em)); text-align: right; pointer-events: none;
+  text-shadow: 0 0 8px #000, 0 0 2px #000;
+}
+.map__where-path {
+  display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 0 0.625em;
+  font-family: var(--card-font-caps); font-size: 0.72em; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--card-muted);
+}
+.map__where-sep { color: var(--tone-special); }
+.map__where-system {
+  display: inline-flex; align-items: center; gap: 0.3548em; margin: 0.0968em 0 0.0323em; padding: 0;
+  border: 0; background: none; cursor: pointer; pointer-events: auto;
+  font-family: var(--card-font); font-size: 1.55em; font-weight: 500; line-height: 1.15; color: var(--masthead-ink, #ece4d6);
+  text-shadow: inherit;
+}
+.map__where-system:hover, .map__where-system:focus-visible { color: #fff; outline: none; }
+.map__where-star { width: 0.55em; height: 0.55em; transform: rotate(45deg); box-shadow: 0 0 0.5em currentColor; flex: none; }
+.map__where-loc { font-size: 0.95em; color: var(--card-text); }
+.map__where-save {
+  margin-top: 0.35em; padding-top: 0.3em; border-top: 1px solid rgba(255, 255, 255, 0.12); display: table; margin-left: auto;   /* own line, as wide as its text */
+  font-size: 0.8em; font-weight: 300; color: var(--card-dim);
+}
+
+/* Star labels */
+.lbl {
+  font-family: var(--card-font); font-size: 0.85em; color: var(--card-text); white-space: nowrap;
+  text-shadow: 0 0 6px #000, 0 0 2px #000;
+}
+.lbl .t { display: inline-block; transform: translateX(calc(50% + 14px)); }
+.lbl--here { color: var(--masthead-ink, #ece4d6); font-weight: 500; font-size: 1em; }
+.lbl--here .t { position: relative; }
+.lbl--here small {   /* under the name, so the name stays level with the star */
+  position: absolute; left: 0; top: 100%; margin-top: 0.0714em; white-space: nowrap; font-family: var(--card-font-caps); font-size: 0.7em; font-weight: 600;
+  letter-spacing: 0.18em; color: var(--tone-special);
+}
+.lbl--known { color: var(--card-dim); font-size: 0.75em; }
+.lbl--nearby { color: var(--card-dim); font-size: 0.72em; display: none; }
+.lbl--sel { color: #fff; }
+.lbl--nearby.lbl--sel, .lbl--nearby.lbl--match { display: block; }
+.lbl--dim { opacity: 0.3; }
+.lbl--out { opacity: 0.08; }
+.lbl--match { color: var(--masthead-ink, #ece4d6); }
+.lbl--region {
+  font-family: var(--card-font-caps); font-size: 0.72em; letter-spacing: 0.12em; color: #7f9fd8; opacity: 0.8;
+}
+.lbl--core {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 0.05em;
+  padding: 0.25em 0.6em 0.3em; background: rgba(6, 4, 14, 0.62); border: 1px solid rgba(180, 140, 255, 0.35);
+  backdrop-filter: blur(2px); text-shadow: none; line-height: 1.15;
+}
+.lbl--core__name {
+  font-family: var(--card-font-caps); font-size: 0.68em; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase;
+  color: #d9c8ff;
+}
+.lbl--core__ly { font-size: 0.82em; color: var(--card-text); font-variant-numeric: tabular-nums; }
+
+/* Hover card: placed by map.js next to the star, a little see-through */
+.map__hover { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+.map__hover .card { position: absolute; left: 0; top: 0; pointer-events: auto; will-change: transform; }
+.map__card { --card-head: rgba(58, 62, 104, 0.82); --card-body: rgba(4, 4, 8, 0.74); width: min(24em, calc(100vw - 2em)); }
+.map__card .card__title { font-size: 1.6em; }
+
+.map-res { margin: 0.2em 0 0 0.4em; }
+.map-res h3 {
+  margin: 0 0 0.4487em; font-family: var(--card-font-caps); font-size: 0.78em; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--card-dim);
+}
+.map-res__list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1.2245em; font-size: 0.98em; }
+.map-res__col { display: flex; flex-direction: column; gap: 0.12em; min-width: 0; }
+.map-res__col:empty { display: none; }
+.map-res__common { color: var(--tone-common); }
+.map-res__uncommon { color: var(--tone-uncommon); }
+.map-res__rare { color: var(--tone-rare); }
+.map-res__plant { color: var(--tone-plant); }
+.map-res__scrap { color: var(--card-text); }
+.map-res__note { margin: 0.4878em 0 0; font-size: 0.82em; font-weight: 300; color: var(--card-dim); }
+
+@media (max-width: 700px) {
+  .map__where { max-width: calc(100vw - 6em); }
+  .map__where-system { font-size: 1.2em; }
+}
+
+
+[hidden] { display: none !important; }
+
+/* Copy address: the portal code in the hint. */
+.map__copy .card__hint { font-family: ui-monospace, monospace; letter-spacing: 0.08em; }
+
+/* Marker for another cluster (after a wormhole etc.): at the screen edge, pointing to it. Placed by map.js. */
+.map__far {
+  position: absolute; left: 0; top: 0; z-index: 2; display: flex; align-items: center; gap: 0.5em;
+  margin: 0; padding: 0; border: 0; background: none; cursor: pointer; color: var(--card-text);
+  font: inherit; text-align: left; will-change: transform;
+}
+.map__far-arrow {
+  position: absolute; left: -0.7em; top: -0.7em; width: 1.4em; height: 1.4em;
+  background: no-repeat center / contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 4l10 8-10 8' fill='none' stroke='%23b48cff' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 0 4px rgba(180, 140, 255, 0.8));
+}
+.map__far-text {
+  position: absolute; left: 1.3em; top: 0; transform: translateY(-50%);
+  display: flex; flex-direction: column; gap: 0.05em; white-space: nowrap;
+  padding: 0.3em 0.7em 0.35em; background: rgba(6, 4, 14, 0.7); border: 1px solid rgba(180, 140, 255, 0.4);
+  backdrop-filter: blur(2px); line-height: 1.15;
+}
+.map__far--left .map__far-text { left: auto; right: 1.3em; text-align: right; }
+.map__far-name { font-size: 0.95em; color: var(--masthead-ink, #ece4d6); }
+.map__far-info { font-size: 0.78em; color: var(--card-dim); font-variant-numeric: tabular-nums; }
+.map__far:hover .map__far-text, .map__far:focus-visible .map__far-text { border-color: rgba(180, 140, 255, 0.9); outline: none; }
+
+/* Pirate / black hole badges after a system's name (card title, star label, location readout): the game's own icons
+   from lib/gameicons.js (--pirate-sprite, --blackhole-sprite), or simple drawn stand-ins without them. */
+.sys-badge {
+  display: inline-block; width: 0.8em; height: 0.8em; margin-left: 0.35em; vertical-align: -0.05em; opacity: 0.85;
+  background: center / contain no-repeat;
+}
+.sys-badge--pirate {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23ff7a6b' d='M12 2C6.5 2 3 5.6 3 10.2c0 2.6 1.2 4.6 3 5.8V19a1 1 0 0 0 1 1h2v-2h2v2h2v-2h2v2h2a1 1 0 0 0 1-1v-3c1.8-1.2 3-3.2 3-5.8C21 5.6 17.5 2 12 2Zm-3.5 7a2 2 0 1 1 0 4 2 2 0 0 1 0-4Zm7 0a2 2 0 1 1 0 4 2 2 0 0 1 0-4Z'/%3E%3C/svg%3E");
+}
+.sys-badge--blackhole {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cellipse cx='12' cy='12' rx='11' ry='4.5' fill='none' stroke='%23b48cff' stroke-width='2'/%3E%3Ccircle cx='12' cy='12' r='5.5' fill='%23000' stroke='%23b48cff' stroke-width='1.5'/%3E%3C/svg%3E");
+}
+.game-icons .sys-badge--pirate { background-image: var(--pirate-sprite); }
+.game-icons .sys-badge--blackhole { background-image: var(--blackhole-sprite); }
+.card__title .sys-badge { width: 0.7em; height: 0.7em; }
+.map__where-system .sys-badge { width: 0.65em; height: 0.65em; margin-left: 0.1em; }

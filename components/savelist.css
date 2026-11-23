@@ -1,0 +1,104 @@
+/* Front page: the list of saves (or what to do when there are none), and the drop overlay. */
+
+.savelist {
+  position: fixed; z-index: 4;
+  top: calc(10.5em + env(safe-area-inset-top, 0px)); bottom: calc(5em + env(safe-area-inset-bottom, 0px));
+  left: 50%; transform: translateX(-50%);
+  width: min(46em, calc(100vw - 2em));
+  display: flex; flex-direction: column;
+  font-family: var(--card-font); color: var(--card-text);
+}
+.savelist__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1em;
+  padding: 0 0.3em 0.6em;
+}
+.savelist__heading {
+  margin: 0; font-family: var(--card-font-caps); font-weight: 600; font-size: 0.95em;
+  letter-spacing: 0.22em; text-transform: uppercase; color: var(--masthead-ink, #ece4d6);
+}
+.savelist__where { font-size: 0.9em; font-weight: 300; color: var(--card-dim); text-align: right; margin-left: auto; }
+.savelist__refresh {
+  display: inline-flex; align-items: center; gap: 0.5556em; align-self: center;
+  --cut: 0.4rem; position: relative; isolation: isolate;
+  padding: 0.3889em 0.9028em; border: 0; border-radius: 0; background: rgba(255, 255, 255, 0.2);   /* frame layer */
+  font-family: var(--card-font-caps); font-size: 0.72em; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--card-muted); cursor: pointer;
+  clip-path: polygon(var(--cut) 0, 100% 0, 100% calc(100% - var(--cut)), calc(100% - var(--cut)) 100%, 0 100%, 0 var(--cut));
+}
+.savelist__refresh::before {
+  content: ""; position: absolute; inset: 1px; z-index: -1; background: rgba(12, 13, 22, 0.92);
+  clip-path: polygon(calc(var(--cut) - 0.5px) 0, 100% 0, 100% calc(100% - var(--cut) + 0.5px), calc(100% - var(--cut) + 0.5px) 100%, 0 100%, 0 calc(var(--cut) - 0.5px));
+}
+.savelist__refresh:hover, .savelist__refresh:focus-visible { color: #fff; background: rgba(255, 214, 150, 0.95); outline: none; }
+.savelist__refresh--spin svg { animation: savelist-spin 0.5s linear; }
+@keyframes savelist-spin { to { transform: rotate(360deg); } }
+
+.savelist__scroll {
+  overflow-y: auto; min-height: 0;
+  background: var(--card-body); backdrop-filter: blur(6px);
+  box-shadow: var(--card-frame);
+  scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.2) transparent;
+}
+.savelist__items { list-style: none; margin: 0; padding: 0.4em 0; }
+
+.save {
+  display: grid; grid-template-columns: 5.2em 1fr auto; gap: 0 1.1em; align-items: center;
+  width: 100%; padding: 0.75em 1.2em; border: 0; border-left: 3px solid transparent;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.save:hover, .save:focus-visible { background: rgba(255, 255, 255, 0.05); outline: none; }
+.save[aria-pressed="true"] { background: rgba(58, 62, 104, 0.45); border-left-color: var(--masthead-ink, #ece4d6); }
+.savelist__items li + li .save { border-top: 1px solid rgba(255, 255, 255, 0.05); }
+
+.save__slot { text-align: center; line-height: 1.15; }
+.save__slot-label {
+  display: block; font-family: var(--card-font-caps); font-size: 0.72em; font-weight: 600;
+  letter-spacing: 0.2em; text-transform: uppercase; color: var(--card-dim);
+}
+.save__slot-number { display: block; font-family: var(--card-font-caps); font-size: 1.7em; font-weight: 500; }
+.save__kind { display: block; font-size: 0.75em; color: var(--card-dim); text-transform: lowercase; }
+
+.save__main { min-width: 0; }
+.save__name { font-size: 1.2em; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.save__name--unnamed { color: var(--card-muted); font-weight: 400; }
+.save__summary { font-size: 0.98em; font-weight: 300; color: var(--card-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.save__tag {
+  display: inline-block; margin-left: 0.7353em; padding: 0 0.5882em; border: 1px solid currentColor; border-radius: 0.2941em;
+  font-family: var(--card-font-caps); font-size: 0.68em; font-weight: 600; letter-spacing: 0.12em;
+  text-transform: uppercase; vertical-align: 0.2em; color: var(--tone-uncommon);
+}
+
+.save__side { text-align: right; white-space: nowrap; }
+.save__date { font-size: 0.98em; }
+.save__time { font-size: 0.88em; font-weight: 300; color: var(--card-dim); }
+
+/* Empty states */
+.savelist__empty { padding: 1.6em 1.6em 1.4em; }
+.savelist__empty h2 { margin: 0 0 0.4444em; font-size: 1.35em; font-weight: 500; }
+.savelist__empty p { margin: 0 0 1em; font-weight: 300; color: var(--card-muted); line-height: 1.5; }
+.savelist__empty .card__actions { margin-top: 0.6em; }
+
+.savelist__foot { padding: 0.7059em 0.3529em 0; font-size: 0.85em; font-weight: 300; color: var(--card-dim); text-align: center; }
+.savelist__message { color: var(--tone-special); }
+
+/* Drop overlay */
+.dropzone {
+  position: fixed; inset: 0.8rem; z-index: 30; pointer-events: none;
+  display: grid; place-items: center;
+  border: 2px dashed rgba(236, 228, 214, 0.6); border-radius: 0.6rem;
+  background: rgba(10, 16, 30, 0.6); backdrop-filter: blur(2px);
+  font-family: var(--card-font-caps); font-size: clamp(1.1em, 2.4vw, 1.8em); font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--masthead-ink, #ece4d6);
+  opacity: 0; transition: opacity 0.12s;
+}
+.dropzone--on { opacity: 1; }
+
+@media (max-width: 560px) {
+  .savelist { top: calc(8em + env(safe-area-inset-top, 0px)); }
+  .save { grid-template-columns: 3.6em 1fr; padding: 0.7em 0.8em; }
+  .save__side { grid-column: 2; text-align: left; display: flex; gap: 0.8em; }
+}
+.savelist__empty code {
+  font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-size: 0.85em; color: var(--card-text);
+}

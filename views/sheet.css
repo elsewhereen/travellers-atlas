@@ -1,0 +1,185 @@
+/* Character sheet: text first, like a tabletop sheet. One readable column of framed sections; tables for
+   everything that has rows; the only graphic is a thin bar for where a ship or tool stat sits in its class range.
+   Colour is kept for three things: rank titles (amber), class letters, and the stat grade word. */
+
+body[data-view="sheet"] .masthead,
+body[data-view="sheet"] .savelist,
+body[data-view="sheet"] .site-footer { display: none; }
+body:not([data-view="sheet"]) .sheet { display: none; }
+
+.sheet {
+  --sh-panel: rgba(7, 8, 14, 0.92);
+  --sh-head: rgba(30, 32, 52, 0.95);
+  --sh-line: rgba(170, 175, 210, 0.16);
+  --sh-frame: rgba(170, 175, 210, 0.32);
+  --sh-rank: #f0c98a;
+  --cls-C: #a9bfae; --cls-B: var(--tone-uncommon); --cls-A: var(--tone-rare); --cls-S: var(--tone-special);
+
+  position: fixed; inset: 0; z-index: 3; overflow-y: auto; overscroll-behavior: contain;
+  font-family: var(--card-font); font-size: max(var(--font-min), 0.95rem); line-height: 1.45; color: var(--card-text);
+  background: rgba(2, 3, 8, 0.7);
+}
+.sheet__inner {
+  max-width: 62em; margin: 0 auto; display: grid; gap: 1.4em;
+  padding-block: calc(4em + env(safe-area-inset-top, 0px)) calc(4em + env(safe-area-inset-bottom, 0px));
+  padding-left: max(1em, env(safe-area-inset-left, 0px)); padding-right: max(1em, env(safe-area-inset-right, 0px));
+}
+.dim { color: var(--card-muted); }
+.rank { color: var(--sh-rank); }
+.fine { margin: 0; font-size: 0.8em; color: var(--card-dim); max-width: 65ch; }
+.sheet__src { justify-self: center; text-align: center; }
+
+/* Name */
+.top { padding: 0 0.2em; }
+.top__eyebrow { margin: 0; font-family: var(--card-font-caps); font-size: 0.78em; font-weight: 600; letter-spacing: 0.24em; text-transform: uppercase; color: var(--card-muted); }
+.top__name { margin: 0.05em 0 0; font-weight: 300; font-size: clamp(2em, 5vw, 3em); line-height: 1.1; letter-spacing: 0.02em; text-wrap: balance; }
+
+/* Sections: a framed panel with a heading band */
+.sec { background: var(--sh-panel); border: 1px solid var(--sh-frame); min-width: 0; }
+.sec__head {
+  display: flex; align-items: baseline; justify-content: space-between; gap: 1em;
+  padding: 0.55em 1.1em; background: var(--sh-head); border-bottom: 1px solid var(--sh-frame);
+}
+.sec__head h3 { margin: 0; font-family: var(--card-font-caps); font-weight: 600; font-size: 0.9em; letter-spacing: 0.22em; text-transform: uppercase; }
+.sec__head span { font-size: 0.82em; color: var(--card-muted); }
+.sec__body { padding: 0.9em 1.1em 1em; display: grid; gap: 1.1em; overflow-x: auto; }
+.h4 { margin: 0 0 0.3em; font-weight: 500; font-size: 1em; }
+.h4 small { font-weight: 300; color: var(--card-muted); }
+
+/* Key–value lists */
+.kv { margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 24em), 1fr)); gap: 0 2em; }
+.kv div { display: grid; grid-template-columns: 9em minmax(0, 1fr); gap: 0.8em; padding: 0.28em 0; border-bottom: 1px solid var(--sh-line); }
+.kv dt { color: var(--card-muted); }
+.kv dd { margin: 0; font-variant-numeric: tabular-nums; }
+
+/* Tables */
+.t { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+.t th, .t td { padding: 0.32em 0.8em 0.32em 0; text-align: left; vertical-align: baseline; border-bottom: 1px solid var(--sh-line); }
+.t th:last-child, .t td:last-child { padding-right: 0; }
+.t thead th { font-family: var(--card-font-caps); font-weight: 600; font-size: 0.72em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--card-dim); border-bottom-color: var(--sh-frame); white-space: nowrap; }
+.t tbody th { font-weight: 500; white-space: nowrap; }
+.t .num { text-align: right; white-space: nowrap; }
+.t .sub th { padding-top: 0.9em; font-family: var(--card-font-caps); font-weight: 600; font-size: 0.72em; letter-spacing: 0.18em; text-transform: uppercase; color: var(--card-muted); }
+.t tr.hostile .rank { color: var(--tone-danger); }
+
+/* Abilities: six plain boxes across, as on a paper sheet */
+.aboxes { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 0.6em; }
+.abox { display: grid; justify-items: center; padding: 0.45em 0.3em 0.5em; border: 1px solid var(--sh-frame); }
+.abox__k { font-family: var(--card-font-caps); font-weight: 600; font-size: 0.75em; letter-spacing: 0.2em; color: var(--card-muted); }
+.abox__v { font-family: var(--card-font-caps); font-size: 2em; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.abox__m { font-size: 0.85em; padding: 0 0.6em; border: 1px solid var(--sh-frame); border-radius: 1em; font-variant-numeric: tabular-nums; }
+.abox__n { margin-top: 0.25em; font-size: 0.8em; color: var(--card-muted); }
+@media (max-width: 560px) { .aboxes { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+/* Notes */
+.notes { margin: 0; padding-left: 1.2em; display: grid; gap: 0.25em; }
+
+/* Gear blocks */
+.gear { display: grid; gap: 0.45em; }
+.gear + .gear, .gear + .h4 { padding-top: 1.1em; border-top: 1px solid var(--sh-frame); }
+.gear h4 { margin: 0; font-weight: 500; font-size: 1.15em; display: flex; align-items: baseline; flex-wrap: wrap; gap: 0 0.5em; }
+.gear h4 small { font-weight: 300; font-size: 0.8em; color: var(--card-muted); }
+.gear__slots { margin: 0; font-variant-numeric: tabular-nums; }
+.gear__slots b { font-weight: 500; }
+.gear__tech { margin: 0; font-size: 0.88em; color: var(--card-muted); max-width: 80ch; }
+.lbl { font-family: var(--card-font-caps); font-weight: 600; font-size: 0.82em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--card-dim); margin-right: 0.4em; }
+.cls { font-family: var(--card-font-caps); font-weight: 600; color: var(--c, var(--cls-C)); }
+.cls--C { --c: var(--cls-C); } .cls--B { --c: var(--cls-B); } .cls--A { --c: var(--cls-A); } .cls--S { --c: var(--cls-S); }
+
+.t--stats { max-width: 42em; }
+.barcell { width: 9em; vertical-align: middle !important; }
+.bar { display: block; height: 4px; background: rgba(255, 255, 255, 0.1); }
+.bar i { display: block; height: 100%; background: var(--card-text); opacity: 0.75; }
+.g { white-space: nowrap; font-size: 0.88em; }
+.g--exceptional { color: var(--tone-special); } .g--strong { color: var(--tone-plant); }
+.g--average { color: var(--card-text); } .g--weak { color: var(--tone-danger); } .g--none { color: var(--card-dim); }
+
+/* Chronicle: short lists side by side */
+.chron { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16em), 1fr)); gap: 1em 1.6em; }
+.chron .kv { grid-template-columns: 1fr; }
+.chron .kv div { grid-template-columns: minmax(0, 1fr) auto; }
+.chron .kv dd { text-align: right; }
+
+/* ---- Inventory grids: the game's slot layout with its icons; text only on hover/focus ---- */
+.invs { display: grid; gap: 0.8em; }
+.inv__label { font-family: var(--card-font-caps); font-weight: 600; font-size: 0.72em; letter-spacing: 0.14em; text-transform: uppercase; color: var(--card-dim); margin-bottom: 0.3em; }
+.inv__label span { letter-spacing: 0.04em; color: var(--card-muted); }
+.inv__grid { display: grid; grid-template-columns: repeat(var(--w), 2.7em); gap: 3px; }
+.slot {
+  position: relative; width: 2.7em; height: 2.7em; display: block;
+  background: rgba(255, 255, 255, 0.045); border: 1px solid rgba(255, 255, 255, 0.09);
+}
+.slot--void { visibility: hidden; }
+.slot--empty { background: rgba(255, 255, 255, 0.02); border-style: dashed; border-color: rgba(255, 255, 255, 0.07); }
+.slot--sc { border-color: rgba(255, 179, 107, 0.75); box-shadow: inset 0 0 0.6em rgba(255, 179, 107, 0.25); }
+.slot--broken, .slot--damaged { border-color: rgba(255, 122, 107, 0.7); }
+.slot--damaged .ico { opacity: 0.45; }
+.slot:hover, .slot:focus-visible { outline: 1px solid var(--card-text); outline-offset: 0; z-index: 1; }
+/* The icon is drawn into the canvas by lib/gameicons.js (not a CSS sprite: Firefox's GPU renderer drops the huge
+   scaled background). Without game icons the canvas is hidden and the tile below shows instead. */
+.ico { position: absolute; inset: 3px; }
+.ico canvas { display: block; width: 100%; height: 100%; }
+html:not(.game-icons) .ico canvas { display: none; }
+/* No game icons loaded (lib/gameicons.js): a tinted tile with the symbol or initials, coloured by kind. */
+html:not(.game-icons) .ico {
+  display: grid; place-items: center; container-type: inline-size; border-radius: 3px;
+  background: var(--ico-tint, rgba(170, 175, 210, 0.16)); color: var(--card-text);
+}
+html:not(.game-icons) .ico::before {
+  content: attr(data-ab); font-style: normal; font-weight: 600; font-size: 34cqi; letter-spacing: -0.02em; line-height: 1;
+}
+.ico--s { --ico-tint: rgba(255, 179, 107, 0.2); }   /* substance */
+.ico--p { --ico-tint: rgba(120, 200, 160, 0.18); }  /* product */
+.ico--t { --ico-tint: rgba(110, 160, 255, 0.2); }   /* technology */
+.ico--u { --ico-tint: rgba(180, 140, 255, 0.22); }  /* procedural upgrade */
+.slot b {
+  position: absolute; right: 2px; bottom: 1px; font-weight: 500; font-size: 0.62em; line-height: 1;
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 3px #000, 0 0 2px #000;
+}
+
+.tip {
+  position: fixed; z-index: 40; max-width: 22em; padding: 0.6em 0.8em 0.65em; pointer-events: none;
+  font-family: var(--card-font); font-size: max(var(--font-min), 0.85rem); line-height: 1.4; color: var(--card-text);
+  background: rgba(10, 11, 18, 0.97); border: 1px solid rgba(170, 175, 210, 0.4); box-shadow: 0 0.8em 2em rgba(0, 0, 0, 0.6);
+}
+.tip[hidden], body:not([data-view="sheet"]) .tip { display: none; }
+.tip p { margin: 0; }
+.tip__name { font-weight: 500; font-size: 1.05em; }
+.tip__kind, .tip__note { color: var(--card-muted); font-size: 0.88em; }
+.tip__note { margin-top: 0.4em !important; }
+.tip__amt { font-variant-numeric: tabular-nums; margin-top: 0.2em !important; }
+.tip__stats { margin-top: 0.35em; border-collapse: collapse; font-variant-numeric: tabular-nums; width: 100%; }
+.tip__stats td { padding: 0.1em 0; vertical-align: baseline; }
+.tip__stats td + td { padding-left: 1em; text-align: right; white-space: nowrap; }
+.tip__sc { margin-top: 0.4em !important; color: var(--tone-special); font-size: 0.88em; }
+.tip__warn { margin-top: 0.4em !important; color: var(--tone-danger); font-size: 0.88em; }
+.tip .dim { color: var(--card-dim); }
+.tip__stats td.dim { font-size: 0.85em; padding-left: 0.8em; }
+.t--tot { max-width: 30em; margin-top: 0.4em; font-size: 0.9em; }
+.inv .tech { margin-top: 0.5em; }
+
+/* ---- Optimize ---- */
+.inv__label { display: flex; align-items: baseline; gap: 0.5em; }
+.opt-btn {
+  margin-left: 0.6em; padding: 0.15em 0.7em; cursor: pointer; font: 600 1em var(--card-font-caps); letter-spacing: 0.12em;
+  text-transform: uppercase; color: var(--tone-special); background: transparent; border: 1px solid rgba(255, 179, 107, 0.55);
+}
+.opt-btn:hover, .opt-btn:focus-visible { background: rgba(255, 179, 107, 0.15); outline: none; }
+.slot--moved { border-color: var(--tone-plant); box-shadow: inset 0 0 0 1px var(--tone-plant); }
+.opt { display: grid; gap: 0.9em; max-height: 78vh; overflow-y: auto; font-size: 0.92em; padding-right: 0.3em; }
+.opt__controls { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.5em 0.8em; align-items: center; }
+.opt__controls select { font: inherit; color: var(--card-text); background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(170, 175, 210, 0.35); padding: 0.3em 0.5em; }
+.opt__controls label { color: var(--card-muted); }
+.opt__check { grid-column: 1 / -1; display: flex; gap: 0.5em; align-items: center; color: var(--card-text) !important; }
+.opt__result { display: grid; gap: 0.7em; }
+.opt__main { margin: 0; font-size: 1.15em; font-variant-numeric: tabular-nums; }
+.opt .up { color: var(--tone-plant); } .opt .down { color: var(--tone-danger); } .opt .dim { color: var(--card-dim); }
+.t--opt { font-size: 0.92em; }
+.t--opt td:first-child { color: var(--card-muted); }
+.card-layer {
+  --sh-line: rgba(170, 175, 210, 0.16); --sh-frame: rgba(170, 175, 210, 0.32);
+  --cls-C: #a9bfae; --cls-B: var(--tone-uncommon); --cls-A: var(--tone-rare); --cls-S: var(--tone-special);
+}
+.card-layer .card__body:has(.opt) { background: rgba(6, 7, 12, 0.97); }
+.slot--over { border-color: rgba(255, 122, 107, 0.9); }
+.slot--over::after { content: "!"; position: absolute; left: 3px; top: 1px; font: 700 0.75em/1 var(--card-font); color: var(--tone-danger); text-shadow: 0 0 3px #000; }

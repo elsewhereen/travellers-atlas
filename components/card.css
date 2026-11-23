@@ -1,0 +1,186 @@
+/* Card: an info pop-up in the spirit of the game's discovery panels (not a copy of them).
+   Fonts: Exo 2 for names and text, Jura in wide caps for actions. Loaded in index.html. */
+
+:root {
+  color-scheme: dark;   /* native controls (select pop-ups, checkboxes, scrollbars) in dark */
+  --card-font: "Exo 2", "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  --card-font-caps: "Jura", "Exo 2", "Segoe UI", Arial, sans-serif;
+  --card-head: rgba(58, 62, 104, 0.94);
+  --card-head-edge: rgba(120, 130, 200, 0.35);
+  --card-body: rgba(4, 4, 8, 0.90);
+  --card-text: #f2f2f5;
+  --card-muted: #a9abbd;
+  --card-dim: #8d8f9c;
+  --card-width: 26em;   /* em: follows the card's own base (--card-size in base.css) */
+  /* Frame around cards and panels, so they stand out from the dark sky and from each other: a thin light edge
+     plus the drop shadow. A box-shadow ring, not a border, so sizes don't change. */
+  --card-frame: 0 0 0 1px rgba(170, 175, 210, 0.38), 0 0 0 4px rgba(4, 4, 8, 0.55), 0 1.2em 3em rgba(0, 0, 0, 0.6);
+
+  /* Tones for list items, roughly the game's colour language. */
+  --tone-plant: #8de86b;
+  --tone-common: #f3ec8c;
+  --tone-uncommon: #9fc4f0;
+  --tone-rare: #c79cff;
+  --tone-special: #ffb36b;
+  --tone-info: #f2f2f5;
+  --tone-danger: #ff7a6b;
+}
+
+/* Native drop-down lists: the selects are see-through (a light tint over the card), and Firefox paints that tint
+   over its own light pop-up, which turned the open list white. Give the options their own dark ground. */
+select option, select optgroup { background-color: #15161f; color: var(--card-text); }
+
+.card {
+  position: relative;
+  width: var(--card-width);
+  font-size: max(var(--font-min), var(--card-size));
+  max-width: calc(100vw - 2em);
+  font-family: var(--card-font);
+  color: var(--card-text);
+  box-shadow: var(--card-frame);
+  user-select: none;
+}
+
+/* Header band */
+.card__head {
+  background: var(--card-head);
+  border-bottom: 2px solid var(--card-head-edge);
+  padding: 0.9em 1.4em 0.8em;
+}
+.card__title {
+  margin: 0;
+  font-size: 1.9em;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.01em;
+}
+.card__subtitle {
+  margin: 0.2381em 0 0 0.5714em;
+  font-size: 1.05em;
+  font-weight: 300;
+  color: var(--card-muted);
+}
+.card__close {
+  position: absolute; top: 0.66em; right: 0.72em;
+  width: 1.92em; height: 1.92em;
+  border: 0; padding: 0; background: none; cursor: pointer;
+}
+.card__close::before {
+  content: ""; display: block; margin: auto;
+  width: 0.54em; height: 0.54em; border-radius: 50%;
+  background: var(--card-text); opacity: 0.8;
+  transition: transform 0.15s, opacity 0.15s;
+}
+.card__close:hover::before { transform: scale(1.6); opacity: 1; }
+
+/* Body */
+.card__body {
+  background: var(--card-body);
+  padding: 1em 1.4em 1.2em;
+  backdrop-filter: blur(6px);
+}
+.card__kind {
+  margin: 0 0 0.7826em 0.5217em;
+  font-size: 1.15em;
+  font-weight: 400;
+}
+
+.card__items { list-style: none; margin: 0 0 0.6em 0.4em; padding: 0; }
+.card__item {
+  display: flex; align-items: center; gap: 0.5217em;
+  font-size: 1.15em; line-height: 1.55;
+  color: var(--tone, var(--tone-info));
+}
+.card__icon { width: 1.087em; height: 1.087em;   /* 1.25 × the card base; it sits in .card__item at 1.15em */
+  flex: none; color: var(--card-text); }
+.card__item[data-tone="plant"]    { --tone: var(--tone-plant); }
+.card__item[data-tone="common"]   { --tone: var(--tone-common); }
+.card__item[data-tone="uncommon"] { --tone: var(--tone-uncommon); }
+.card__item[data-tone="rare"]     { --tone: var(--tone-rare); }
+.card__item[data-tone="special"]  { --tone: var(--tone-special); }
+.card__item[data-tone="danger"]   { --tone: var(--tone-danger); }
+
+/* Free content: label/value fields and small notes */
+.card__field { margin: 0 0 0.9em 0.6em; }
+.card__field-label {
+  font-family: var(--card-font-caps); font-size: 0.85em; font-weight: 600;
+  letter-spacing: 0.18em; text-transform: uppercase; color: var(--card-dim);
+}
+.card__field-value { font-size: 1.15em; margin-top: 0.1304em; word-break: break-word; }
+.card__field-value[data-tone="ok"]   { color: var(--tone-plant); }
+.card__field-value[data-tone="warn"] { color: var(--tone-special); }
+.card__field-value[data-tone="none"] { color: var(--card-muted); }
+.card__note { margin: 0.2174em 0 0.9783em 0.6522em; font-size: 0.92em; font-weight: 300; color: var(--card-dim); line-height: 1.45; }
+.card__note code {
+  font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-size: 0.85em;
+  color: var(--card-muted); word-break: break-all;
+}
+.card__files { list-style: none; margin: 0.3158em 0 0; padding: 0; font-size: 0.95em; color: var(--card-muted); }
+.card__files li { display: flex; justify-content: space-between; gap: 1.0526em; }
+
+/* Actions */
+.card__actions { margin-top: 1em; display: grid; gap: 0.35em; }
+.card__action {
+  display: grid; grid-template-columns: 2.1em 1fr; column-gap: 0.55em; align-items: center;
+  padding: 0.35em 0.4em; border: 0; background: none; text-align: left;
+  color: var(--card-text); font: inherit; cursor: pointer;
+  opacity: 0.85; transition: background 0.15s, opacity 0.15s;
+}
+.card__action:hover, .card__action:focus-visible { background: rgba(255, 255, 255, 0.06); opacity: 1; outline: none; }
+.card__action[disabled] { opacity: 0.4; cursor: default; background: none; }
+.card__key {
+  grid-row: span 2;
+  width: 1.7273em; height: 1.7273em; display: grid; place-items: center;
+  border: 2px solid currentColor; border-radius: 0.2727em;
+  font-family: var(--card-font-caps); font-size: 1.1em; font-weight: 600;
+}
+.card__label {
+  font-family: var(--card-font-caps); font-size: 1.55em; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; line-height: 1.1;
+}
+.card__hint { font-size: 1em; font-weight: 300; color: var(--card-dim); }
+
+/* Pop-up behaviour */
+.card-layer { position: fixed; inset: 0; pointer-events: none; z-index: 10; }
+.card--popup {
+  position: absolute; pointer-events: auto;
+  animation: card-in 0.18s ease-out;
+}
+.card--still { animation: none; }
+.card--closing { animation: card-out 0.14s ease-in forwards; }
+@keyframes card-in  { from { opacity: 0; transform: translateY(6px) scale(0.98); } }
+@keyframes card-out { to   { opacity: 0; transform: translateY(4px) scale(0.98); } }
+
+
+/* Settings: install paths with a copy button. */
+.card__paths { margin: -0.4em 0 0.9783em 0.6522em; }
+.card__paths summary {
+  cursor: pointer; width: fit-content; font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: var(--card-dim);
+}
+.card__paths summary:hover, .card__paths summary:focus-visible { color: var(--card-text); outline: none; }
+.card__paths[open] summary { margin-bottom: 0.4em; }
+.card__paths .card__note { margin: 0 0 0.5em; }
+.card__path {
+  display: grid; grid-template-columns: 1fr auto; gap: 0.15em 0.6em; align-items: center;
+  padding: 0.35em 0; border-top: 1px solid rgba(255, 255, 255, 0.07); font-size: 0.85em;
+}
+.card__path-where { grid-column: 1 / -1; color: var(--card-dim); font-size: 0.9em; }
+.card__path code {
+  font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-size: 0.9em; color: var(--card-muted);
+  overflow-wrap: anywhere; user-select: all;
+}
+.card__copy {
+  font: inherit; font-size: 0.9em; color: var(--card-text); background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 3px; padding: 0.2em 0.7em; cursor: pointer;
+}
+.card__copy:hover, .card__copy:focus-visible { background: rgba(255, 255, 255, 0.14); outline: none; }
+
+/* Tabs inside a card (Settings): same look as the filter's tabs. */
+.card__tabs { display: flex; gap: 0 0.2em; margin: 0 0 1em; border-bottom: 1px solid rgba(255, 255, 255, 0.12); }
+.card__tab {
+  margin-bottom: -1px; padding: 0.6em 0.75em 0.55em; font-family: var(--card-font-caps); font-size: 0.76em; font-weight: 600;
+  letter-spacing: 0.12em; text-transform: uppercase; color: var(--card-dim); background: none; border: 0;
+  border-bottom: 2px solid transparent; cursor: pointer;
+}
+.card__tab:hover, .card__tab:focus-visible { color: #fff; outline: none; }
+.card__tab[aria-selected="true"] { color: #ffe2b8; border-bottom-color: var(--fx-edge-hot, #ffd696); }

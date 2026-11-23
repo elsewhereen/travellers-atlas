@@ -1,0 +1,385 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Traveller's Atlas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500&family=Jura:wght@400;500;600&display=swap">
+  <link rel="stylesheet" href="base.css">
+  <link rel="stylesheet" href="components/card.css">
+  <link rel="stylesheet" href="components/menu.css">
+  <link rel="stylesheet" href="components/masthead.css">
+  <link rel="stylesheet" href="components/savelist.css">
+  <link rel="stylesheet" href="components/manual.css">
+  <link rel="stylesheet" href="components/loader.css">
+  <link rel="stylesheet" href="views/map.css">
+  <link rel="stylesheet" href="views/distance.css">
+  <link rel="stylesheet" href="views/sheet.css">
+  <link rel="stylesheet" href="components/search.css">
+  <link rel="stylesheet" href="components/footer.css">
+  <script src="lib/config.js"></script>
+  <style>
+    html,
+    body {
+      margin: 0;
+      height: 100%;
+      background: #020306;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+
+<body data-view="home">
+  <canvas id="sky"></canvas>
+  <header class="masthead">
+    <h1 class="masthead__title" data-app="name"></h1>
+    <div class="masthead__rule" aria-hidden="true">
+      <svg class="masthead__diamond" viewBox="0 0 40 40">
+        <path d="M20 2 38 20 20 38 2 20Z" fill="currentColor" />
+        <circle cx="20" cy="20" r="5.5" fill="#0c1222" />
+      </svg>
+    </div>
+  </header>
+  <script>
+    "use strict";
+    // Space background ported from spacesim (nebula_sky.gdshader + noise.gdshaderinc + SpaceTint.cs, look.json "space").
+    // A new sky per load; press N for another.
+
+    const TUNING = {
+      strength: [0.15, 0.6], saturation: [0.3, 0.8], hueSpread: 60, wispHue: 90,
+      wispShare: 0.6, baseShare: 0.3, avoidHues: [25, 85],
+      grey: 0.2,           // spacesim's flight view uses 0.8; the front page can be more vivid
+      brightness: 1.0,
+    };
+    // Rough NMS star colours (yellow, red, green, blue).
+    const STARS = [[1.0, 0.85, 0.45], [1.0, 0.35, 0.25], [0.45, 1.0, 0.5], [0.45, 0.7, 1.0]];
+
+    // --- SpaceTint.For -----------------------------------------------------------------------------
+    const mix32 = h => {
+      h ^= h >>> 16; h = Math.imul(h, 0x85EBCA6B);
+      h ^= h >>> 13; h = Math.imul(h, 0xC2B2AE35);
+      return (h ^ (h >>> 16)) >>> 0;
+    };
+    const lerp = (r, t) => r[0] + (r[1] - r[0]) * t;
+    function hue(c) {
+      const [r, g, b] = c, max = Math.max(r, g, b), min = Math.min(r, g, b), d = max - min;
+      if (d <= 0) return 0;
+      const h = max === r ? ((g - b) / d) % 6 : max === g ? (b - r) / d + 2 : (r - g) / d + 4;
+      return (h * 60 + 360) % 360;
+    }
+    function steer(h, avoid, t) {
+      h = ((h % 360) + 360) % 360;
+      if (h <= avoid[0] || h >= avoid[1]) return h;
+      const push = (avoid[1] - avoid[0]) / 2 * t;
+      const moved = h - avoid[0] < avoid[1] - h ? avoid[0] - push : avoid[1] + push;
+      return ((moved % 360) + 360) % 360;
+    }
+    function fromHsl(h, s, l) {
+      const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs(((h / 60) % 2) - 1)), m = l - c / 2;
+      const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x]
+        : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+      return [r + m, g + m, b + m];
+    }
+    const bright = c => { const m = Math.max(...c); return c.map(v => v / m); };
+    const times = (c, k) => c.map(v => v * k);
+
+    function spaceTint(seed, star, t = TUNING) {
+      const key = mix32((seed ^ 0x5EED7157) >>> 0);
+      let draw = 0;
+      const next = () => (mix32((key + Math.imul(++draw, 0x9E3779B9)) >>> 0) & 0xFFFFFF) / 0x1000000;
+      const strength = lerp(t.strength, next());
+      const saturation = lerp(t.saturation, next());
+      const h = steer(hue(star) + t.hueSpread * (2 * next() - 1), t.avoidHues, next());
+      const wh = steer(h + t.wispHue * (next() < 0.5 ? -1 : 1), t.avoidHues, next());
+      const nebula = bright(fromHsl(h, saturation, 0.5));
+      const wisps = bright(fromHsl(wh, saturation, 0.5));
+      const fill = times(nebula, strength * t.baseShare);
+      const black = [0.004, 0.005, 0.009];
+      return { base: black.map((v, i) => v + fill[i]), nebula: times(nebula, strength), wisps: times(wisps, strength * t.wispShare) };
+    }
+
+    // --- WebGL ---------------------------------------------------------------------------------------
+    // Two passes, so the GPU isn't busy all the time. The nebula (2 × 6 octaves of 3D noise per pixel, the expensive
+    // part) is drawn at half resolution into a texture a few times a second; it drifts a few pixels per second, so
+    // nobody sees the difference. The screen pass samples it and adds the stars at full resolution, ~30 fps.
+    // While the map is shown, or with reduced motion, the sky stands still and is only redrawn on resize or N.
+    const SKY = { nebScale: 0.5, nebFps: 8, fps: 30 };
+    const VERT = `attribute vec2 p; void main() { gl_Position = vec4(p, 0.0, 1.0); }`;
+    const COMMON = `
+precision highp float;
+uniform vec2 res;
+uniform float time, seed;
+
+float hash3(vec3 p) {
+  p = fract(p * 0.3183099 + 0.1);
+  p *= 17.0;
+  return fract(p.x * p.y * p.z * (p.x + p.y + p.z));
+}
+vec3 seedOffset(float s) { return fract(s * vec3(0.7310, 1.3713, 0.5197)) * 97.0; }
+
+// View direction for this pixel; px = radians per pixel near the centre.
+vec3 viewDir(out float px) {
+  vec2 uv = (gl_FragCoord.xy - 0.5 * res) / res.y;
+  float fov = 0.6;                                   // tan of half the vertical field of view (~62 deg)
+  float yaw = time * 0.006, pitch = 0.18 + 0.05 * sin(time * 0.004);
+  vec3 f = vec3(sin(yaw) * cos(pitch), sin(pitch), cos(yaw) * cos(pitch));
+  vec3 r = normalize(cross(vec3(0, 1, 0), f)), u = cross(f, r);
+  px = 2.0 * fov / res.y;
+  return normalize(f + (uv.x * r + uv.y * u) * 2.0 * fov);
+}
+`;
+    const NEB_FRAG = COMMON + `
+uniform float grey, brightness;
+uniform vec3 baseC, nebulaC, wispC;
+
+float noise3(vec3 x) {
+  vec3 i = floor(x), f = fract(x);
+  f = f * f * (3.0 - 2.0 * f);
+  return mix(mix(mix(hash3(i), hash3(i + vec3(1,0,0)), f.x),
+                 mix(hash3(i + vec3(0,1,0)), hash3(i + vec3(1,1,0)), f.x), f.y),
+             mix(mix(hash3(i + vec3(0,0,1)), hash3(i + vec3(1,0,1)), f.x),
+                 mix(hash3(i + vec3(0,1,1)), hash3(i + vec3(1,1,1)), f.x), f.y), f.z);
+}
+float fbm(vec3 p) {
+  float v = 0.0, a = 0.5;
+  for (int i = 0; i < 6; i++) { v += a * noise3(p); p = p * 2.03 + vec3(1.7, 9.2, 3.1); a *= 0.5; }
+  return v;
+}
+
+void main() {
+  float px;
+  vec3 d = viewDir(px);
+  vec3 off = seedOffset(seed);
+  float cloud = fbm(d * 2.0 + off);
+  float wisps = fbm(d * 4.5 + off + 31.0);
+  vec3 c = baseC;
+  c += nebulaC * smoothstep(0.5, 0.9, cloud);
+  c += wispC * smoothstep(0.6, 0.9, wisps);
+  c = mix(c, vec3(dot(c, vec3(0.2126, 0.7152, 0.0722))), grey) * brightness;
+  gl_FragColor = vec4(c * 0.5, 1.0);                 // halved: an 8-bit texture holds 0..2
+}`;
+    const SCREEN_FRAG = COMMON + `
+uniform sampler2D neb;
+
+// Soft point stars: one candidate per cell on the sky sphere, drawn as a small glow around a random spot in it.
+vec3 stars(vec3 d, vec3 off, float cells, float density, float px) {
+  vec3 cell = floor(d * cells);
+  float h = hash3(cell + off);
+  if (h < 1.0 - density) return vec3(0.0);
+  vec3 spot = normalize(cell + 0.5 + 0.6 * (vec3(hash3(cell + 3.1), hash3(cell + 5.7), hash3(cell + 9.3)) - 0.5));
+  float r = acos(clamp(dot(d, spot), -1.0, 1.0)) / px;   // angular distance in pixels
+  float mag = 0.25 + 0.75 * pow(hash3(cell + 7.0), 4.0);
+  float glow = exp(-r * r * 1.3) * mag + 0.08 * mag * mag * exp(-r * 0.6);
+  float tw = 0.85 + 0.15 * sin(time * (1.0 + 3.0 * hash3(cell + 2.2)) + h * 40.0);
+  vec3 tint = mix(vec3(1.0), mix(vec3(1.0, 0.8, 0.6), vec3(0.7, 0.8, 1.0), hash3(cell + 4.4)), 0.4);
+  return tint * glow * tw;
+}
+
+void main() {
+  float px;
+  vec3 d = viewDir(px);
+  vec3 off = seedOffset(seed);
+  vec3 c = texture2D(neb, gl_FragCoord.xy / res).rgb * 2.0;
+  c += stars(d, off, 700.0, 0.004, px);
+  c += stars(d, off + 11.0, 160.0, 0.02, px) * 1.6;  // a few brighter ones
+  c = c / (1.0 + c * 0.6);                           // gentle tonemap so bright stars don't clip hard
+  c += (hash3(vec3(gl_FragCoord.xy, time)) - 0.5) / 255.0;   // dither against banding
+  gl_FragColor = vec4(c, 1.0);                       // spacesim colours are already display (sRGB) values
+}`;
+
+    const canvas = document.getElementById("sky");
+    const gl = canvas.getContext("webgl", { antialias: false });
+    function shader(type, src) {
+      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+      return s;
+    }
+    function program(frag) {
+      const p = gl.createProgram();
+      gl.attachShader(p, shader(gl.VERTEX_SHADER, VERT));
+      gl.attachShader(p, shader(gl.FRAGMENT_SHADER, frag));
+      gl.bindAttribLocation(p, 0, "p");
+      gl.linkProgram(p);
+      if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p));
+      return p;
+    }
+    const nebProg = program(NEB_FRAG), screenProg = program(SCREEN_FRAG);
+    gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer());
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW);
+    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
+    const U = (p, n) => gl.getUniformLocation(p, n);
+
+    // The nebula's half-resolution texture and the framebuffer that draws into it.
+    const nebTex = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, nebTex);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const nebFb = gl.createFramebuffer();
+    let nebW = 1, nebH = 1, dirty = true;
+
+    function newSky() {
+      const seed = (Math.random() * 0x100000000) >>> 0;
+      const tint = spaceTint(seed, STARS[seed % STARS.length]);
+      const s = (seed % 100000) / 7.31;
+      gl.useProgram(nebProg);
+      gl.uniform1f(U(nebProg, "seed"), s);
+      gl.uniform3fv(U(nebProg, "baseC"), tint.base);
+      gl.uniform3fv(U(nebProg, "nebulaC"), tint.nebula);
+      gl.uniform3fv(U(nebProg, "wispC"), tint.wisps);
+      gl.useProgram(screenProg);
+      gl.uniform1f(U(screenProg, "seed"), s);
+      dirty = true;
+    }
+    gl.useProgram(nebProg);
+    gl.uniform1f(U(nebProg, "grey"), TUNING.grey);
+    gl.uniform1f(U(nebProg, "brightness"), TUNING.brightness);
+    gl.useProgram(screenProg);
+    gl.uniform1i(U(screenProg, "neb"), 0);
+    newSky();
+    addEventListener("keydown", e => {
+      if ((e.key === "n" || e.key === "N") && !/^(INPUT|SELECT|TEXTAREA)$/.test(document.activeElement?.tagName || "")) newSky();
+    });
+    document.addEventListener("click", e => {             // the button comes later in the page
+      const b = e.target.closest && e.target.closest("#sky-button");
+      if (!b) return;
+      newSky();
+      b.classList.remove("sky-button--spin"); void b.offsetWidth; b.classList.add("sky-button--spin");
+    });
+    // A random nebula and wisp colour pair (0..1 RGB), the same kind the sky uses; Card.tint paints headers with it.
+    window.Sky = {
+      randomTint() {
+        const s = (Math.random() * 0x100000000) >>> 0; const t = spaceTint(s, STARS[s % STARS.length]);
+        return { nebula: bright(t.nebula), wisps: bright(t.wisps) };
+      }
+    };
+
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 1.5);
+      canvas.width = Math.round(innerWidth * dpr); canvas.height = Math.round(innerHeight * dpr);
+      nebW = Math.max(1, Math.round(canvas.width * SKY.nebScale));
+      nebH = Math.max(1, Math.round(canvas.height * SKY.nebScale));
+      gl.bindTexture(gl.TEXTURE_2D, nebTex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, nebW, nebH, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, nebFb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, nebTex, 0);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      dirty = true;
+    }
+    addEventListener("resize", resize); resize();
+
+    function drawNebula(t) {
+      gl.bindFramebuffer(gl.FRAMEBUFFER, nebFb);
+      gl.viewport(0, 0, nebW, nebH);
+      gl.useProgram(nebProg);
+      gl.uniform2f(U(nebProg, "res"), nebW, nebH);
+      gl.uniform1f(U(nebProg, "time"), t);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+    function drawScreen(t) {
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(screenProg);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, nebTex);
+      gl.uniform2f(U(screenProg, "res"), canvas.width, canvas.height);
+      gl.uniform1f(U(screenProg, "time"), t);
+      gl.drawArrays(gl.TRIANGLES, 0, 3);
+    }
+
+    // The sky's own clock only runs while it moves, so it picks up where it stopped after the map.
+    const still = matchMedia("(prefers-reduced-motion: reduce)");
+    let skyTime = 0, last = performance.now(), lastNeb = -1e9, lastScreen = -1e9;
+    (function frame(now) {
+      requestAnimationFrame(frame);
+      now = now || performance.now();
+      const frozen = still.matches || document.body.dataset.view !== "home";   // map, distance
+      if (!frozen) skyTime += Math.min(now - last, 250) / 1000;
+      last = now;
+      if (frozen && !dirty) return;
+      if (dirty || now - lastNeb >= 1000 / SKY.nebFps) { drawNebula(skyTime); lastNeb = now; }
+      if (dirty || now - lastScreen >= 1000 / SKY.fps - 2) { drawScreen(skyTime); lastScreen = now; }
+      dirty = false;
+    })();
+  </script>
+  <button type="button" class="sky-button" id="sky-button" title="New nebula (N)" aria-label="New nebula">
+    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+      <g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 12a8 8 0 1 1-2.3-5.6" />
+        <path d="M20 4v5h-5" />
+      </g>
+    </svg>
+  </button>
+  <footer class="site-footer">
+    <p><span data-app="name">Traveller's Atlas</span> is a free, non-commercial fan tool. It is not affiliated with or
+      endorsed by Hello Games; No Man's Sky and its names and images belong to Hello Games.
+      Values are computed from your save or the address you enter, not read from the game's servers, and may be wrong
+      after a game update.</p>
+    <p>Positions are exact: computed from each address with the same algorithms the game uses.</p>
+  </footer>
+  <script src="components/card.js"></script>
+  <script src="components/menu.js"></script>
+  <script src="lib/saveformat.js"></script>
+  <script src="lib/saves.js"></script>
+  <script src="components/settings.js"></script>
+  <script src="components/savelist.js"></script>
+  <script src="components/manual.js"></script>
+  <script src="components/loader.js"></script>
+  <script src="lib/resources.js"></script>
+  <script src="lib/stargen.js"></script>
+  <script src="lib/sysgen.js"></script>
+  <script src="lib/station.js"></script>
+  <script src="lib/shopdata.js"></script>
+  <script src="lib/shops.js"></script>
+  <script src="lib/atlas.js"></script>
+  <script src="views/map.js"></script>
+  <script src="views/distance.js"></script>
+  <script src="lib/sheetdata.js"></script>
+  <script src="lib/gameicons.js"></script>
+  <script src="lib/proctech.js"></script>
+  <script src="lib/sheet.js"></script>
+  <script src="lib/optimize.js"></script>
+  <script src="views/sheet.js"></script>
+  <script src="components/distance.js"></script>
+  <script src="components/search.js"></script>
+  <script src="lib/app.js"></script>
+  <script>
+    "use strict";
+    document.querySelectorAll('[data-app="name"]').forEach(e => e.textContent = APP.name);
+    Menu.init({
+      title: APP.name,
+      subtitle: APP.tagline,
+      items: [
+        { id: "saves", icon: "saves", label: "Saves", hint: "Choose a save", onSelect: () => App.view("home") },
+        { id: "address", icon: "address", label: "Enter address", hint: "No save? Type the portal glyphs", onSelect: () => Manual.open() },
+        { id: "map", icon: "map", label: "Map", hint: "Your known space", disabled: true, onSelect: () => App.view("map") },
+        { id: "sheet", icon: "sheet", label: "Character", hint: "Standing, ranks, ships and multi-tools", disabled: true, onSelect: () => App.view("sheet") },
+        {
+          id: "reload", icon: "reload", label: "Reload save", hint: "Read the open save again from disk", disabled: true,
+          onSelect: () => App.reload()
+        },
+        { id: "distance", icon: "distance", label: "Distance to", hint: "How far to another address", onSelect: () => Distance.open() },
+        {
+          id: "search", icon: "search", label: "Filter", hint: "Nearest systems with the resources you need", disabled: true,
+          onSelect: () => { App.view("map"); Search.open(); }
+        },
+      ],
+      footer: [{ id: "settings", icon: "settings", label: "Settings", hint: "Save folder and game icons", onSelect: () => Settings.open() }],
+    });
+    SaveList.mount();
+    // A dot on Settings while the save folder isn't usable.
+    addEventListener("saves:changed", e => Menu.badge("settings", e.detail.status !== "ready"));
+  </script>
+</body>
+
+</html>

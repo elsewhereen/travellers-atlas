@@ -1,0 +1,66 @@
+/* Burger menu: a button in the top-left corner and a panel that slides in from the left, styled like the cards. */
+
+.menu-button {
+  position: fixed; z-index: 20;
+  top: calc(1.2em + env(safe-area-inset-top, 0px)); left: 1.2em;
+  width: 3.6em; height: 3.6em; padding: 0.96em 0.84em;
+  display: flex; flex-direction: column; justify-content: space-between;
+  border: 0; border-radius: 0.24em; cursor: pointer;
+  background: rgba(4, 4, 8, 0.55); backdrop-filter: blur(4px);
+  transition: background 0.15s;
+}
+.menu-button:hover, .menu-button:focus-visible { background: var(--card-head); outline: none; }
+.menu-button span {
+  display: block; height: 2px; background: var(--card-text); border-radius: 1px;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.menu-open .menu-button span:nth-child(1) { transform: translateY(0.6em) rotate(45deg); }
+.menu-open .menu-button span:nth-child(2) { opacity: 0; }
+.menu-open .menu-button span:nth-child(3) { transform: translateY(-0.6em) rotate(-45deg); }
+
+.menu-panel {
+  position: fixed; z-index: 15; top: 0; bottom: 0; left: 0;
+  width: 20em; max-width: calc(100vw - 3em);
+  display: flex; flex-direction: column;
+  font-family: var(--card-font); color: var(--card-text);
+  box-shadow: 0 0 3em rgba(0, 0, 0, 0.6);
+  transform: translateX(-105%); transition: transform 0.22s ease-out;
+  visibility: hidden;
+}
+.menu-open .menu-panel { transform: none; visibility: visible; }
+
+.menu-panel__head {
+  background: var(--card-head);
+  border-bottom: 2px solid var(--card-head-edge);
+  padding: calc(1.15em + env(safe-area-inset-top, 0px)) 1.4em 1em 4.8em;
+}
+.menu-panel__title { margin: 0; font-size: 1.45em; font-weight: 500; line-height: 1.1; }
+.menu-panel__subtitle { margin: 0.2105em 0 0; font-size: 0.95em; font-weight: 300; color: var(--card-muted); }
+
+.menu-panel__body {
+  flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+  background: var(--card-body); backdrop-filter: blur(6px);
+  padding: 1em 0.8em calc(1em + env(safe-area-inset-bottom, 0px));
+  overflow-y: auto;
+}
+.menu-panel__group { display: grid; gap: 0.2em; }
+.menu-panel__group--footer { border-top: 1px solid rgba(255, 255, 255, 0.08); padding-top: 0.8em; }
+
+.menu-item {
+  display: grid; grid-template-columns: 1.6em 1fr; column-gap: 0.8em; align-items: center;
+  padding: 0.55em 0.6em; border: 0; background: none; text-align: left;
+  color: var(--card-text); font: inherit; cursor: pointer; opacity: 0.85;
+  transition: background 0.15s, opacity 0.15s;
+}
+.menu-item:hover, .menu-item:focus-visible { background: rgba(255, 255, 255, 0.06); opacity: 1; outline: none; }
+.menu-item[disabled] { opacity: 0.35; cursor: default; background: none; }
+.menu-item .card__icon { grid-row: span 2; width: 1.4em; height: 1.4em; }
+.menu-item__label {
+  font-family: var(--card-font-caps); font-size: 1.15em; font-weight: 600;
+  letter-spacing: 0.16em; text-transform: uppercase;
+}
+.menu-item__hint { font-size: 0.88em; font-weight: 300; color: var(--card-dim); }
+.menu-item__badge {
+  display: inline-block; width: 0.3913em; height: 0.3913em; margin-left: 0.4348em; border-radius: 50%;
+  vertical-align: middle; background: var(--tone-special);
+}

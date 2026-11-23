@@ -1,0 +1,122 @@
+/* "Enter address": the atlas without a save (components/manual.js). Builds on card.css. */
+
+.card--manual .card__body { max-height: calc(100vh - 9em); overflow-y: auto; scrollbar-width: thin; }
+.card--manual { user-select: text; }
+.manual { margin: 0 0 0.4em; }
+.manual code { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; font-size: 0.85em; color: var(--card-muted); }
+
+.manual__row { display: flex; flex-wrap: wrap; gap: 0.6em 0.8em; align-items: flex-end; margin: 0 0 0.8em 0.6em; }
+.manual__field { display: flex; flex-direction: column; gap: 0.25em; min-width: 0; }
+.manual__grow { flex: 1 1 14em; }
+
+.manual__input, .manual__select {
+  font: inherit; font-size: 1em; color: var(--card-text);
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 0.2em;
+  padding: 0.45em 0.6em; min-width: 0; width: 100%; box-sizing: border-box;
+}
+.manual__input { font-family: ui-monospace, "JetBrains Mono", Consolas, monospace; letter-spacing: 0.08em; }
+.manual__select { max-width: 16em; }
+.manual__input:focus, .manual__select:focus { outline: none; border-color: var(--tone-uncommon); }
+/* × at the right end of a text field (clearable() in manual.js). */
+.manual__clearable { position: relative; display: block; min-width: 0; }
+.manual__clearable .manual__input { padding-right: 2em; }
+.manual__clear {
+  position: absolute; right: 0.2083em; top: 50%; transform: translateY(-50%);
+  width: 1.3333em; height: 1.3333em; padding: 0; border: 0; border-radius: 50%;
+  background: none; color: var(--card-muted); font: inherit; font-size: 1.2em; line-height: 1; cursor: pointer;
+}
+.manual__clear:hover, .manual__clear:focus-visible { color: var(--card-text); background: rgba(255, 255, 255, 0.1); outline: none; }
+
+/* The game's glyphs: one sprite of 16, 0–F (--glyphs-sprite from lib/gameicons.js); JS sets background-position-x.
+   Without the player's game icons: the hex digit in a plain tile. */
+.glyph {
+  display: inline-grid; place-items: center; width: 2.2em; aspect-ratio: 1; flex: none; box-sizing: border-box;
+  background: var(--glyphs-sprite, none) 0 0 / 1600% 100% no-repeat;
+}
+html:not(.game-icons) .glyph { container-type: inline-size; border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 50%; }
+html:not(.game-icons) .glyph::before {
+  content: attr(data-hex); font-size: 55cqi; font-weight: 600; font-family: ui-monospace, monospace; line-height: 1;
+}
+.glyphs { display: inline-flex; gap: 0.1em; flex: none; }
+.glyphs--small .glyph { width: 1.15em; }
+.glyphs--preview { margin-bottom: 0.35em; }
+.glyphs--preview .glyph { width: 1.9em; }
+
+/* Twelve slots, like the portal's address bar */
+.manual__slots {
+  display: grid; grid-template-columns: repeat(12, 1fr); gap: 0.25em; margin: 0 0 0.6em 0.6em;
+}
+.manual__slot {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 0;
+  aspect-ratio: 1 / 1.15; border: 1px dashed rgba(255, 255, 255, 0.16); border-radius: 0.2em; overflow: hidden;
+}
+.manual__slot--on { border-style: solid; border-color: rgba(159, 196, 240, 0.55); background: rgba(159, 196, 240, 0.08); }
+.manual__slot .glyph { width: 88%; }
+
+/* The glyph pad: 0–F plus backspace and clear */
+.manual__pad {
+  display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.3em; margin: 0 0 0.9em 0.6em;
+}
+.manual__glyph {
+  display: flex; flex-direction: column; align-items: center; gap: 0.05em; min-width: 0;
+  padding: 0.35em 0.2em; font: inherit; color: var(--card-text); cursor: pointer;
+  background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 0.2em;
+  transition: background 0.12s, border-color 0.12s;
+}
+.manual__glyph:hover, .manual__glyph:focus-visible { background: rgba(255, 214, 150, 0.16); border-color: rgba(255, 214, 150, 0.7); outline: none; }
+.manual__glyph--tool { justify-content: center; font-family: var(--card-font-caps); font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; font-size: 0.85em;
+  padding: 0.4118em 0.2353em; gap: 0.0588em; }   /* the base padding, undone for the smaller font */
+.manual__glyph-digit { font-family: var(--card-font-caps); font-weight: 600; font-size: 1.15em; line-height: 1; }
+.manual__glyph-name { font-size: 0.7em; color: var(--card-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+
+.manual__preview {
+  margin: 0 0 0.9em 0.6em; padding: 0.6em 0.8em; min-height: 1.4em;
+  border-left: 3px solid rgba(159, 196, 240, 0.6); background: rgba(255, 255, 255, 0.03);
+}
+.manual__preview[data-tone="warn"] { border-left-color: var(--tone-special); color: var(--tone-special); }
+.manual__name { font-size: 1.45em; font-weight: 500; line-height: 1.15; }
+.manual__facts { font-size: 0.98em; color: var(--card-muted); margin: 0.1531em 0 0.3061em; }
+.manual__dim { font-size: 0.85em; font-weight: 300; color: var(--card-dim); }
+
+.manual__find, .manual__list { margin: 0 0 0.9em 0.6em; }
+.manual__find .manual__row { margin: 0.35em 0 0.4em; flex-wrap: nowrap; }
+.manual__btn {
+  font-family: var(--card-font-caps); font-size: 0.82em; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--card-text); background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 0.2439em; padding: 0.6098em 0.9756em; cursor: pointer; flex: none;
+}
+.manual__btn:hover:not([disabled]) { background: rgba(255, 214, 150, 0.16); border-color: rgba(255, 214, 150, 0.7); }
+.manual__btn[disabled] { opacity: 0.45; cursor: default; }
+
+.manual__results { list-style: none; margin: 0.3em 0 0; padding: 0; max-height: 12em; overflow-y: auto; scrollbar-width: thin; }
+.manual__results > li.manual__dim { padding: 0.3em 0.2em; }
+.manual__item { display: flex; align-items: stretch; }
+.manual__result {
+  flex: 1; display: flex; justify-content: space-between; align-items: baseline; gap: 1em; min-width: 0;
+  padding: 0.35em 0.4em; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.manual__result:hover, .manual__result:focus-visible { background: rgba(255, 255, 255, 0.06); outline: none; }
+.manual__result-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.manual__tag {
+  display: inline-block; margin-left: 0.6923em; padding: 0 0.5385em; border: 1px solid currentColor; border-radius: 0.3077em;
+  font-family: var(--card-font-caps); font-size: 0.65em; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
+  vertical-align: 0.15em; color: var(--tone-plant);
+}
+.manual__tag--dim { color: var(--tone-uncommon); }
+.manual__x {
+  flex: none; width: 1.6667em; border: 0; background: none; color: var(--card-dim); font-size: 1.2em; cursor: pointer;
+}
+.manual__x:hover, .manual__x:focus-visible { color: var(--tone-danger); outline: none; }
+
+/* Front page block below the saves */
+.manual-home { border-top: 1px solid rgba(255, 255, 255, 0.08); }
+/* Laid out like the save list's "Where are your saves?" block: text, then the action on the left. */
+.manual-home__line { padding: 1.2em 1.6em 1.4em; }
+.manual-home__text { display: block; font-weight: 300; color: var(--card-muted); line-height: 1.5; }
+.manual-home__line .card__actions { margin-top: 0.6em; }
+
+@media (max-width: 560px) {
+  .manual__pad { grid-template-columns: repeat(4, 1fr); }
+  .manual__slots { gap: 0.15em; }
+  .glyphs--small .glyph { width: 0.9em; }
+}

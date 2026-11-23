@@ -1,0 +1,1104 @@
+/* Filter drawer (components/search.js): docked at the top centre behind a small tab; open, about 80 % of the screen. */
+
+body:not([data-view="map"]) .search {
+  display: none;
+}
+
+.search {
+  position: fixed;
+  z-index: 4;
+  top: 0;
+  left: 50%;
+  width: min(80vw, 90em);
+  height: 90vh;
+  transform: translate(-50%, -100%);
+  transition: transform 0.25s ease;
+}
+
+.search--open {
+  transform: translate(-50%, 0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .search {
+    transition: none;
+  }
+}
+
+.search:not(.search--open) .filter {
+  visibility: hidden;
+  transition: visibility 0s 0.25s;
+}
+
+.search [hidden] {
+  display: none !important;
+}
+
+.search__tab {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5625em;
+  padding: 0.375em 1.25em 0.4375em;
+  margin-top: env(safe-area-inset-top, 0px);
+  font-family: var(--card-font-caps);
+  font-size: 0.8em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--card-text);
+  background: rgba(58, 62, 104, 0.78);
+  border: 1px solid var(--card-head-edge);
+  border-top: 0;
+  border-radius: 0 0 0.5625em 0.5625em;
+  cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+
+.search--open .search__tab {
+  margin-top: 0;
+}
+
+.search__tab:hover,
+.search__tab:focus-visible {
+  background: rgba(78, 84, 140, 0.92);
+  outline: none;
+}
+
+.search__tab--on {
+  color: #fff;
+  border-color: var(--tone-uncommon);
+  box-shadow: 0 0 0.8em rgba(159, 196, 240, 0.35);
+}
+
+/* Panel */
+.filter {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  font-size: max(var(--font-min), 0.9rem);
+  /* smaller than the app, so the panel fits without scrolling */
+  font-family: var(--card-font);
+  color: var(--card-text);
+  background: rgba(4, 4, 8, 0.84);
+  backdrop-filter: blur(8px);
+  box-shadow: var(--card-frame);
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.filter__head {
+  background: var(--card-head);
+  border-bottom: 2px solid var(--card-head-edge);
+  padding: 0.7em 1.4em 0.6em;
+  flex: none;
+}
+
+.filter__title {
+  margin: 0;
+  font-size: 1.5em;
+  font-weight: 500;
+  line-height: 1.1;
+}
+
+.filter__sub {
+  margin: 0.2105em 0 0 0.6316em;
+  font-size: 0.95em;
+  font-weight: 300;
+  color: var(--card-muted);
+}
+
+.filter__main {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+}
+
+.filter__left,
+.filter__right {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1em 1.4em;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+}
+
+.filter__right {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 1em 0.8em;
+}
+
+/* Where: scope buttons | radius (kept in place when hidden), then "All on one planet" right above the resources */
+.filter__where {
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  align-items: center;
+  gap: 0.9em 1.4em;
+  margin-bottom: 0.9em;
+}
+
+.filter__where .filter__scope {
+  flex-wrap: nowrap;
+}
+
+.filter__where .filter__radius {
+  margin-left: 0;
+  min-height: 2.4359em;
+  min-width: 0;
+}
+
+.filter__where .filter__slider {
+  flex: 1 1 7.2em;
+  min-width: 6em;
+  max-width: 16.8em;
+  width: auto;
+}
+
+.filter__where .filter__one {
+  grid-column: 1 / -1;
+  justify-self: start;
+}
+
+.filter__spoiler {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6548em;
+  margin: -0.2381em 0 0;
+  padding: 0.5357em 0.8333em;
+  max-width: 54.7619em;
+  font-size: 0.84em;
+  font-weight: 300;
+  line-height: 1.4;
+  color: #ffd9a8;
+  background: rgba(255, 179, 107, 0.07);
+  border-left: 2px solid var(--tone-special);
+}
+
+.filter__spoiler svg {
+  flex: none;
+  margin-top: 0.119em;
+  color: var(--tone-special);
+}
+
+.filter__spoiler--off {
+  visibility: hidden;
+}
+
+.filter__radius--off {
+  visibility: hidden;
+}
+
+.filter__scope {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35em;
+  align-items: center;
+}
+
+.filter__seg,
+.filter__btn {
+  font-family: var(--card-font-caps);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--card-text);
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 0.4032em;
+  padding: 0.6452em 1.2903em;
+  cursor: pointer;
+}
+
+.filter__seg:hover,
+.filter__btn:hover:not([disabled]) {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.filter__seg[aria-pressed="true"] {
+  background: rgba(159, 196, 240, 0.18);
+  border-color: var(--tone-uncommon);
+  color: #fff;
+}
+
+/* Resource groups */
+.filter__groups {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13em, 1fr));
+  gap: 1em 1.6em;
+  align-items: start;
+}
+
+.filter__group {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.filter__group legend {
+  padding: 0;
+  margin-bottom: 0.5128em;
+  font-family: var(--card-font-caps);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--card-dim);
+}
+
+.filter__check {
+  display: flex;
+  align-items: center;
+  gap: 0.5612em;
+  padding: 0.1633em 0;
+  font-size: 0.98em;
+  cursor: pointer;
+}
+
+.filter__check input {
+  accent-color: var(--tone-uncommon);
+  width: 1.2em;
+  height: 1.2em;
+  margin: 0;
+}
+
+.filter__group[data-tone="common"] .filter__check span {
+  color: var(--tone-common);
+}
+
+.filter__group[data-tone="uncommon"] .filter__check span {
+  color: var(--tone-uncommon);
+}
+
+.filter__group[data-tone="rare"] .filter__check span {
+  color: var(--tone-rare);
+}
+
+.filter__group[data-tone="plant"] .filter__check span {
+  color: var(--tone-plant);
+}
+
+.filter__check:hover span {
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.filter__one {
+  color: var(--card-muted);
+}
+
+/* Results */
+.filter__status {
+  margin: 0 0.7059em 0.5882em;
+  font-size: 0.85em;
+  font-weight: 300;
+  color: var(--card-dim);
+}
+
+.filter__results {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.filter__row {
+  width: 100%;
+  display: block;
+  text-align: left;
+  font: inherit;
+  color: var(--card-text);
+  background: none;
+  border: 0;
+  padding: 0.45em 0.6em;
+  cursor: pointer;
+}
+
+.filter__row:hover,
+.filter__row:focus-visible {
+  background: rgba(255, 255, 255, 0.07);
+  outline: none;
+}
+
+.filter__rtop {
+  display: grid;
+  grid-template-columns: 0.6em 1fr auto auto;
+  gap: 0.55em;
+  align-items: center;
+}
+
+.filter__dot {
+  width: 0.55em;
+  height: 0.55em;
+  border-radius: 50%;
+}
+
+.filter__name {
+  font-size: 1em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter__tag {
+  font-size: 0.72em;
+  color: var(--card-dim);
+}
+
+.filter__ly {
+  font-size: 0.85em;
+  color: var(--card-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.filter__line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.0588em 0.7059em;
+  margin: 0.1765em 0 0 1.3529em;
+  font-size: 0.85em;
+}
+
+.filter__what {
+  color: var(--card-dim);
+}
+
+.filter__what::after {
+  content: ":";
+}
+
+.filter__planet[data-tone="common"] {
+  color: var(--tone-common);
+}
+
+.filter__planet[data-tone="uncommon"] {
+  color: var(--tone-uncommon);
+}
+
+.filter__planet[data-tone="rare"] {
+  color: var(--tone-rare);
+}
+
+.filter__planet[data-tone="plant"] {
+  color: var(--tone-plant);
+}
+
+.filter__planet[data-tone="danger"] {
+  color: var(--tone-danger);
+}
+
+.filter__planet[data-tone="info"] {
+  color: var(--card-text);
+}
+
+/* Footer */
+.filter__foot {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  position: relative;
+  padding: 0.7em 1.4em calc(0.7em + 0px);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.filter__pending {
+  position: absolute;
+  left: 1.5909em;
+  font-size: 0.88em;
+  color: var(--card-dim);
+}
+
+.filter__btn--main {
+  background: rgba(159, 196, 240, 0.2);
+  border-color: var(--tone-uncommon);
+  color: #fff;
+}
+
+.filter__btn--main:hover:not([disabled]) {
+  background: rgba(159, 196, 240, 0.32);
+}
+
+.filter__btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+}
+
+@media (max-width: 800px) {
+  .search {
+    width: calc(100vw - 2em);
+    height: 88vh;
+  }
+
+  .filter__main {
+    grid-template-columns: 1fr;
+    grid-template-rows: 3fr 2fr;
+  }
+
+  .filter__right {
+    border-left: 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .filter__foot {
+    flex-wrap: wrap;
+  }
+
+  .filter__pending {
+    position: static;
+    width: 100%;
+    text-align: center;
+  }
+}
+
+/* ---------- Sci-fi skin: cut corners, hairline glow edges, diamond ticks ---------- */
+.search,
+.filter,
+.filter-active,
+.save-notice {
+  --fx-edge: rgba(236, 228, 214, 0.32);
+  --fx-edge-hot: rgba(255, 214, 150, 0.95);
+  --fx-fill: rgba(16, 18, 30, 0.85);
+  --fx-fill-hot: rgba(255, 179, 107, 0.14);
+  --fx-glow: 0 0 0.9rem rgba(255, 179, 107, 0.35);
+  --fx-cut: 0.55rem;
+}
+
+/* Buttons and scope segments: an edge layer clipped to a cut-corner shape, with the fill inset 1px inside it. */
+.filter__seg,
+.filter__btn {
+  position: relative;
+  isolation: isolate;
+  border: 0;
+  border-radius: 0;
+  background: var(--fx-edge);
+  padding: 0.625em 1.3125em 0.6em;
+  clip-path: polygon(var(--fx-cut) 0, 100% 0, 100% calc(100% - var(--fx-cut)), calc(100% - var(--fx-cut)) 100%, 0 100%, 0 var(--fx-cut));
+  color: var(--card-muted);
+  font-size: 0.8em;
+  letter-spacing: 0.22em;
+  transition: color 0.15s, background 0.15s, filter 0.15s;
+}
+
+.filter__seg::before,
+.filter__btn::before {
+  content: "";
+  position: absolute;
+  inset: 1px;
+  z-index: -1;
+  background: var(--fx-fill);
+  clip-path: polygon(calc(var(--fx-cut) - 0.5px) 0, 100% 0, 100% calc(100% - var(--fx-cut) + 0.5px), calc(100% - var(--fx-cut) + 0.5px) 100%, 0 100%, 0 calc(var(--fx-cut) - 0.5px));
+  transition: background 0.15s;
+}
+
+.filter__seg:hover,
+.filter__btn:hover:not([disabled]),
+.filter__seg:focus-visible,
+.filter__btn:focus-visible {
+  background: var(--fx-edge-hot);
+  color: #fff;
+  outline: none;
+  filter: drop-shadow(0 0 0.4375em rgba(255, 179, 107, 0.45));
+}
+
+.filter__seg:hover::before,
+.filter__btn:hover:not([disabled])::before {
+  background: rgba(40, 30, 22, 0.9);
+}
+
+.filter__seg[aria-pressed="true"] {
+  background: var(--fx-edge-hot);
+  color: #ffe2b8;
+  border: 0;
+}
+
+.filter__seg[aria-pressed="true"]::before {
+  background: linear-gradient(180deg, rgba(255, 179, 107, 0.26), rgba(255, 179, 107, 0.06)), #120e0c;
+}
+
+.filter__seg[aria-pressed="true"]::after {
+  /* a small diamond marks the active segment */
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  background: var(--fx-edge-hot);
+  transform: rotate(45deg);
+}
+
+.filter__btn--main {
+  background: rgba(159, 196, 240, 0.75);
+  color: #fff;
+}
+
+.filter__btn--main::before {
+  background: linear-gradient(180deg, rgba(159, 196, 240, 0.26), rgba(159, 196, 240, 0.06)), #0c0f16;
+}
+
+.filter__btn--main:hover:not([disabled]) {
+  background: #cfe3ff;
+  filter: drop-shadow(0 0 0.45em rgba(159, 196, 240, 0.6));
+}
+
+.filter__btn--main:hover:not([disabled])::before {
+  background: linear-gradient(180deg, rgba(159, 196, 240, 0.38), rgba(159, 196, 240, 0.12)), #0c0f16;
+}
+
+/* Radius: a thin glowing track with a diamond thumb, and a small cut-corner number field */
+.filter__radius {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7692em;
+  margin-left: 0.3846em;
+  font-family: var(--card-font-caps);
+  font-size: 0.78em;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--card-muted);
+}
+
+.filter__slider {
+  --fill: 50%;
+  appearance: none;
+  -webkit-appearance: none;
+  width: clamp(9.6em, 16vw, 16.8em);
+  height: 1.44em;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.filter__slider::-webkit-slider-runnable-track {
+  height: 2px;
+  background: linear-gradient(90deg, var(--fx-edge-hot) var(--fill), var(--fx-edge) var(--fill));
+}
+
+.filter__slider::-moz-range-track {
+  height: 2px;
+  background: var(--fx-edge);
+}
+
+.filter__slider::-moz-range-progress {
+  height: 2px;
+  background: var(--fx-edge-hot);
+}
+
+.filter__slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 0.96em;
+  height: 0.96em;
+  margin-top: calc(-0.48em + 1px);
+  background: #120e0c;
+  border: 1px solid var(--fx-edge-hot);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0.6em rgba(255, 179, 107, 0.55);
+}
+
+.filter__slider::-moz-range-thumb {
+  width: 0.7em;
+  height: 0.7em;
+  border-radius: 0;
+  background: #120e0c;
+  border: 1px solid var(--fx-edge-hot);
+  transform: rotate(45deg);
+  box-shadow: 0 0 0.5em rgba(255, 179, 107, 0.55);
+}
+
+.filter__slider:hover::-webkit-slider-thumb,
+.filter__slider:focus-visible::-webkit-slider-thumb {
+  background: var(--fx-edge-hot);
+}
+
+.filter__slider:hover::-moz-range-thumb,
+.filter__slider:focus-visible::-moz-range-thumb {
+  background: var(--fx-edge-hot);
+}
+
+.filter__slider:focus-visible {
+  outline: none;
+}
+
+.filter__numbox {
+  --c: 0.35rem;
+  display: inline-block;
+  padding: 1px;
+  background: var(--fx-edge-hot);
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+}
+
+.filter__num {
+  --c: calc(0.35rem - 0.4px);
+  display: block;
+  width: 3.7895em;
+  padding: 0.3789em 0.5263em 0.3579em;
+  border: 0;
+  border-radius: 0;
+  font-family: var(--card-font);
+  font-size: 1.2179em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-align: right;
+  color: #fff;
+  background: #120e0c;
+  clip-path: polygon(var(--c) 0, 100% 0, 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, 0 100%, 0 var(--c));
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.filter__numbox:focus-within {
+  filter: drop-shadow(0 0 0.35em rgba(255, 179, 107, 0.45));
+}
+
+.filter__num::-webkit-outer-spin-button,
+.filter__num::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.filter__num:focus {
+  outline: none;
+}
+
+.filter__within,
+.filter__unit {
+  color: var(--card-dim);
+}
+
+/* Checkboxes: a hollow square that turns into a glowing diamond when ticked */
+.filter__check input {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: none;
+  position: relative;
+  width: 1.14em;
+  height: 1.14em;
+  margin: 0;
+  cursor: pointer;
+  border: 1px solid var(--fx-edge);
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.filter__check input::after {
+  content: "";
+  position: absolute;
+  inset: 0.24em;
+  background: currentColor;
+  transform: rotate(45deg) scale(0);
+  transition: transform 0.15s ease-out;
+}
+
+.filter__check:hover input {
+  border-color: var(--fx-edge-hot);
+}
+
+.filter__check input:checked {
+  border-color: var(--fx-edge-hot);
+  box-shadow: var(--fx-glow), inset 0 0 0.42em rgba(255, 179, 107, 0.25);
+}
+
+.filter__check input:checked::after {
+  transform: rotate(45deg) scale(1);
+}
+
+.filter__check input:focus-visible {
+  outline: 1px solid var(--fx-edge-hot);
+  outline-offset: 2px;
+}
+
+/* Each group's tick takes its tone */
+.filter__group[data-tone="common"] input {
+  color: var(--tone-common);
+}
+
+.filter__group[data-tone="uncommon"] input {
+  color: var(--tone-uncommon);
+}
+
+.filter__group[data-tone="rare"] input {
+  color: var(--tone-rare);
+}
+
+.filter__group[data-tone="plant"] input {
+  color: var(--tone-plant);
+}
+
+.filter__group[data-tone="info"] input,
+.filter__one input {
+  color: #fff;
+}
+
+.filter__check:hover span {
+  text-decoration: none;
+  text-shadow: 0 0 0.5102em currentColor;
+}
+
+/* Group headings with a hairline running out to the right */
+.filter__group legend {
+  display: flex;
+  align-items: center;
+  gap: 0.641em;
+  width: 100%;
+}
+
+.filter__group legend::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, var(--fx-edge), transparent);
+}
+
+/* The tab: a trapezoid hanging from the top edge, with a light strip along its bottom */
+.search__tab {
+  border: 0;
+  border-radius: 0;
+  isolation: isolate;
+  padding: 0.475em 2.375em 0.5625em;
+  background: var(--fx-edge);
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.125em) 100%, 1.125em 100%);
+  letter-spacing: 0.26em;
+  color: var(--card-text);
+  transition: background 0.15s, filter 0.15s, color 0.15s;
+}
+
+.search__tab::before {
+  content: "";
+  position: absolute;
+  inset: 0 1px 1px;
+  z-index: -1;
+  background: linear-gradient(180deg, rgba(40, 44, 78, 0.95), rgba(20, 22, 40, 0.95));
+  clip-path: polygon(0 0, 100% 0, calc(100% - 1.125em + 0.4px) 100%, calc(1.125em - 0.4px) 100%);
+}
+
+.search__tab::after {
+  content: "";
+  position: absolute;
+  left: 1.75em;
+  right: 1.75em;
+  bottom: 2px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--fx-edge-hot), transparent);
+  opacity: 0.55;
+}
+
+.search__tab:hover,
+.search__tab:focus-visible {
+  background: var(--fx-edge-hot);
+  color: #fff;
+  filter: drop-shadow(0 0 0.625em rgba(255, 179, 107, 0.5));
+}
+
+.search__tab--on {
+  background: var(--fx-edge-hot);
+  color: #ffe2b8;
+  box-shadow: none;
+  filter: drop-shadow(0 0 0.5em rgba(255, 179, 107, 0.45));
+}
+
+.search__tab--on::after {
+  opacity: 1;
+}
+
+/* Panel frame: a thin bright line along the bottom edge */
+.filter {
+  position: relative;
+}
+
+.filter::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--fx-edge-hot) 20%, var(--fx-edge-hot) 80%, transparent);
+  opacity: 0.6;
+}
+
+/* ---------- Active filter: a small, quiet card at the bottom left; clearer on hover ---------- */
+body:not([data-view="map"]) .filter-active {
+  display: none;
+}
+
+.filter-active[hidden] {
+  display: none;
+}
+
+.filter-active {
+  --fx-edge: rgba(236, 228, 214, 0.32);
+  --fx-edge-hot: rgba(255, 214, 150, 0.95);
+  --fx-fill: rgba(16, 18, 30, 0.85);
+  --fx-cut: 0.45rem;
+  position: fixed;
+  z-index: 4;
+  left: 1em;
+  bottom: calc(1em + env(safe-area-inset-bottom, 0px));
+  /* level with the sky button */
+  width: max-content;
+  max-width: min(14em, calc(100vw - 2em));
+  padding: 0.45em 0.65em 0.5em;
+  font-family: var(--card-font);
+  color: var(--card-text);
+  background: rgba(4, 4, 8, 0.38);
+  backdrop-filter: blur(3px);
+  border-left: 1px solid rgba(255, 214, 150, 0.5);
+  opacity: 0.7;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.filter-active:hover,
+.filter-active:focus-within {
+  opacity: 1;
+  background: rgba(4, 4, 8, 0.7);
+}
+
+.filter-active__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8em;
+}
+
+.filter-active__label {
+  font-family: var(--card-font-caps);
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--card-dim);
+}
+
+.filter-active__count {
+  font-size: 0.75em;
+  color: #ffe2b8;
+  font-variant-numeric: tabular-nums;
+}
+
+.filter-active__scope {
+  margin-top: 0.1765em;
+  font-size: 0.85em;
+}
+
+.filter-active__res {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.7051em;
+  margin-top: 0.1282em;
+  font-size: 0.78em;
+}
+
+.filter-active__res [data-tone="common"] {
+  color: var(--tone-common);
+}
+
+.filter-active__res [data-tone="uncommon"] {
+  color: var(--tone-uncommon);
+}
+
+.filter-active__res [data-tone="rare"] {
+  color: var(--tone-rare);
+}
+
+.filter-active__res [data-tone="plant"] {
+  color: var(--tone-plant);
+}
+
+.filter-active__res [data-tone="info"] {
+  color: var(--card-text);
+}
+
+.filter-active__note {
+  margin-top: 0.1351em;
+  font-size: 0.74em;
+  color: var(--card-muted);
+}
+
+.filter-active__btns {
+  display: flex;
+  gap: 0.35em;
+  margin-top: 0.4em;
+}
+
+.filter-active .filter__btn {
+  padding: 0.3548em 0.8871em 0.3226em;
+  font-size: 0.62em;
+  letter-spacing: 0.18em;
+}
+
+/* ---------- "The game has saved" notice on the map (lib/app.js) ---------- */
+body:not([data-view="map"]):not([data-view="sheet"]) .save-notice {
+  display: none;
+}
+
+.save-notice[hidden] {
+  display: none;
+}
+
+.save-notice {
+  position: fixed;
+  z-index: 5;
+  right: 1.1111em;
+  top: calc(9.3333em + env(safe-area-inset-top, 0px));
+  /* below the location readout */
+  display: flex;
+  align-items: center;
+  gap: 0.8889em;
+  max-width: min(33.3333em, calc(100vw - 2.2222em));
+  padding: 0.6667em 0.6667em 0.6667em 1em;
+  font-family: var(--card-font);
+  font-size: 0.9em;
+  color: var(--card-text);
+  background: rgba(4, 4, 8, 0.8);
+  backdrop-filter: blur(6px);
+  border-left: 2px solid var(--tone-uncommon);
+  clip-path: polygon(0 0, calc(100% - 0.7778em) 0, 100% 0.7778em, 100% 100%, 0 100%);
+}
+
+.save-notice .filter__btn {
+  padding: 0.4861em 1.1111em 0.4583em;
+  font-size: 0.72em;
+  flex: none;
+}
+
+.save-notice__x {
+  flex: none;
+  border: 0;
+  background: none;
+  color: var(--card-dim);
+  font-size: 1.2em;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 0.1667em;
+}
+
+.save-notice__x:hover {
+  color: #fff;
+}
+
+/* Section heads (System, Resources) with "All on one planet" beside Resources */
+.filter__reshead {
+  display: flex;
+  align-items: center;
+  gap: 1.4em;
+  margin: 1.1em 0 0.6em;
+}
+
+.filter__reshead h3 {
+  margin: 0;
+  font-family: var(--card-font-caps);
+  font-size: 0.86em;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--masthead-ink, #ece4d6);
+}
+
+.filter__reshead .filter__one {
+  padding: 0;
+}
+
+.filter__groups--system {
+  margin-bottom: 0.2em;
+}
+
+.filter__sys {
+  margin: 0.125em 0 0 1.4375em;
+  font-size: 0.8em;
+  color: var(--card-dim);
+}
+
+@media (max-width: 1100px) {
+
+  /* the footer text reaches the corners: sit above it */
+  .filter-active {
+    bottom: calc(4.6em + env(safe-area-inset-bottom, 0px));
+  }
+}
+/* Tabs below the system choice: one per kind of thing to look for (planet resources, the station's shops) */
+.filter__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.2em;
+  margin: 1.4em 0 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.filter__tabbtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  margin-bottom: -1px;
+  padding: 0.6em 0.75em 0.55em;
+  font-family: var(--card-font-caps);
+  font-size: 0.76em;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--card-dim);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+
+.filter__tabbtn:hover,
+.filter__tabbtn:focus-visible {
+  color: #fff;
+  outline: none;
+}
+
+.filter__tabbtn[aria-selected="true"] {
+  color: #ffe2b8;
+  border-bottom-color: var(--fx-edge-hot, #ffd696);
+}
+
+.filter__tabcount:not(:empty) {
+  min-width: 1.4em;
+  padding: 0.05em 0.35em;
+  font-size: 0.9em;
+  letter-spacing: 0;
+  text-align: center;
+  color: #0c0f16;
+  background: var(--tone-uncommon);
+  border-radius: 0.7em;
+}
+
+.filter__panel > .filter__reshead:first-child {
+  margin-top: 1em;
+}
+
+.filter__note {
+  margin: 0 0 0.9em;
+  max-width: 54em;
+  font-size: 0.84em;
+  font-weight: 300;
+  line-height: 1.45;
+  color: var(--card-muted);
+}
+
+.filter__note--soon {
+  margin-top: 1.2em;
+  color: var(--card-dim);
+  font-style: italic;
+}
+
+.filter__tier {
+  margin-left: auto;
+  font-size: 0.72em;
+  color: var(--card-dim);
+}
+
+.filter__planet[data-tone="maybe"] {
+  color: var(--card-dim);
+  font-style: italic;
+}
